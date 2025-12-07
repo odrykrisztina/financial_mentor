@@ -37,8 +37,7 @@
   (if exist drop all tables)
   - name    : financial_mentor
   - encoding: utf8mb4_unicode_ci
-  
-//////- php artisan migrate
+  - cd ..
   
 - PhpMyAdmin:
   - Open database
@@ -46,6 +45,7 @@
     backend/db/financial_mentor.sql
 
 ### Run (servers)
+#### In root folder
 Start:
 - ./start.bat
 
