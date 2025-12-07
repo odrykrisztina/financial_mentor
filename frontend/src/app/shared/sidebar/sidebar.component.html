@@ -1,0 +1,146 @@
+<!-- TOGGLE BUTTONS -->
+<div class="fixed top-20 flex items-center justify-center
+            cursor-pointer bg-transparent 
+            hover:bg-gray-200 dark:hover:bg-gray-700
+            z-10 w-8 h-8 rounded-full"
+     [class.right-2]="position === 'right'"
+     [class.left-2]="position === 'left'"
+     (click)="toggle()">
+  <fa-icon [icon]="icon.faCaretRight"
+           [class.rotate-180]="position === 'right' || state.open" 
+           class="fa-2xl"></fa-icon>
+</div>
+
+<!-- PANEL -->
+<div class="fixed z-10 w-64 max-w-full
+            transform transition-transform duration-300
+            text-base list-none
+            divide-gray-100 shadow-sm dark:divide-gray-600
+            bg-gray-200 dark:bg-gray-700
+            border rounded-lg 
+            border-gray-300 dark:border-gray-500 
+            flex flex-col max-h-[85vh] overflow-y-auto"
+            [style.top.px]="topOffset"          
+            [class.left-0]="position === 'left'"
+            [class.right-0]="position === 'right'"
+            [class.-translate-x-full]="position === 'left' && !state.open"
+            [class.translate-x-0]="position === 'left' && state.open"
+            [class.translate-x-full]="position === 'right' && !state.open"
+            [class.translate-x-0]="position === 'right' && state.open">
+
+  <!-- HEADER -->
+  <div class="flex items-center justify-between px-4 py-3">
+    <div class="font-semibold truncate capitalize-first tracking-wide">
+      {{ lang.data[ title ] || title }}
+    </div>
+    <div class="flex items-center gap-1">
+
+      <!-- TOGGLE expand button -->
+      <button type="button"
+              class="text-xl leading-none cursor-pointer rounded-md p-1
+                     hover:bg-gray-100 dark:hover:bg-gray-800"
+              (click)="toggleExpandAll()">
+        <span class="inline-block transition-transform"
+              [class.rotate-180]="anyExpanded()">
+          <fa-icon [icon]="icon.faAngleDown" class="fa-sm"></fa-icon>
+        </span>
+      </button>
+
+      <!-- PIN/UNPIN button -->
+      @if (state.canPin) {
+        <button type="button"
+                class="text-xl leading-none cursor-pointer rounded-md p-1
+                       hover:bg-gray-100 dark:hover:bg-gray-800"
+                (click)="pinToggle()">
+          <fa-icon [icon]="icon.faThumbtack" 
+                   class="fa-sm"
+                   [class.hidden]="state.mode === 'fixed'"></fa-icon>
+          <fa-icon [icon]="icon.faThumbtackSlash" 
+                   class="fa-sm"
+                   [class.hidden]="state.mode !== 'fixed'"></fa-icon>
+        </button>
+      }
+
+      <!-- CLOSE button -->
+      <button type="button"
+              class="text-xl leading-none cursor-pointer rounded-md p-1
+                     hover:bg-gray-100 dark:hover:bg-gray-800"
+        (click)="closeAndUnpin()">
+        <fa-icon [icon]="icon.faCircleXmark" 
+                 class="fa-sm"></fa-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- ITEMS -->
+  <nav class="flex-1 overflow-y-auto p-2">
+    <ng-container
+      *ngTemplateOutlet="renderItems; 
+      context: { $implicit: items, level: 0 }">
+    </ng-container>
+  </nav>
+
+  <!-- RECURSIVE -->
+  <ng-template #renderItems let-items let-level="level">
+    @for (item of items; track item.id) {
+
+      @if (item.separatorBefore) {
+        <hr class="my-2 border-slate-400 dark:border-slate-500">
+      }
+
+      <!-- NAVIGATE ITEM -->
+      <div class="mb-1 rounded cursor-pointer select-none bg-transparent
+                  hover:bg-slate-200 dark:hover:bg-slate-800
+                  px-3 py-2"
+           [attr.item-id]="item.id"
+           [class.opacity-50]="item.disabled || isSelected(item)"
+           [class.pointer-events-none]="item.disabled || isSelected(item)"
+           (click)="onItemClick(item); $event.stopPropagation()">
+           
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2"
+               [style.paddingLeft.px]="level * 12">
+            @if (item.icon) {
+              <fa-icon [icon]="item.icon" class="fa-sm"></fa-icon>
+            } @else if (item.emoji) {
+              <span class="text-lg leading-none">{{ item.emoji }}</span>
+            }
+            <div class="flex flex-col text-left">
+              <span class="truncate capitalize-first">
+                @if (item.labelKey) {
+                  {{ lang.data[item.labelKey] || item.labelKey }}
+                } @else {
+                  {{ item.title }}
+                }
+              </span>
+
+              @if (item.subLabelKey || item.subTitle) {
+                <span class="text-gray-500 dark:text-gray-400">
+                  {{ item.subLabelKey
+                      ? (lang.data[item.subLabelKey] || item.subLabelKey)
+                      : item.subTitle }}
+                </span>
+              }
+            </div>
+          </div>
+          @if (item.children?.length) {
+            <span class="ms-1 inline-block transition-transform"
+                  [class.rotate-180]="isExpanded(item.id)">
+              <fa-icon [icon]="icon.faAngleDown" class="fa-sm"></fa-icon>
+            </span>
+          }
+        </div>
+      </div>
+
+      <!-- CHILDREN RECURSIVE -->
+      @if (item.children?.length && isExpanded(item.id)) {
+        <div class="mb-1">
+          <ng-container
+            *ngTemplateOutlet="renderItems; 
+            context: { $implicit: item.children, level: level + 1 }">
+          </ng-container>
+        </div>
+      }
+    }
+  </ng-template>
+</div>

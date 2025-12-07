@@ -1,0 +1,129 @@
+@layer components {
+  .forms-enabled .form-control {
+    @apply block w-full text-sm border-0 rounded-lg pe-7
+           border-gray-300 bg-gray-50 p-2.5 
+           text-gray-900
+           focus:border-green-500 focus:ring-green-500
+           dark:border-gray-600 dark:bg-gray-700
+           dark:text-white dark:placeholder-gray-400
+           dark:focus:border-green-500 dark:focus:ring-green-500;
+  }
+  .forms-enabled .form-control.form-disabled,
+  .forms-enabled .form-label.form-label-disabled,
+  .forms-enabled .form-control-radio.form-disabled,
+  .forms-enabled .form-label-radio.form-label-disabled,
+  .forms-enabled .form-control-img_preview.form-label-disabled,
+  .forms-enabled .form-btn-accordion.form-btn-disabled {
+    
+    @apply border-0 bg-transparent text-gray-700 dark:text-gray-400;
+    pointer-events: none;
+    cursor: default !important;
+  }
+
+  .forms-enabled .form-control:-webkit-autofill,
+  .forms-enabled .form-control:-webkit-autofill:hover,
+  .forms-enabled .form-control:-webkit-autofill:focus,
+  .forms-enabled .form-control:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 1000px #F9FAFB inset;
+            box-shadow: 0 0 0 1000px #F9FAFB inset;
+    -webkit-text-fill-color: #000000;
+    caret-color: #000000;
+    transition: background-color 9999s ease-out, color 9999s ease-out;
+  }
+
+  html.dark .forms-enabled .form-control:-webkit-autofill,
+  html.dark .forms-enabled .form-control:-webkit-autofill:hover,
+  html.dark .forms-enabled .form-control:-webkit-autofill:focus,
+  html.dark .forms-enabled .form-control:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 1000px #374151 inset;
+            box-shadow: 0 0 0 1000px #374151 inset;
+    -webkit-text-fill-color: #ffffff;
+    caret-color: #ffffff;
+  }
+
+  .forms-enabled .form-control-checkbox {
+    @apply w-4 h-4 rounded 
+           border-gray-300 text-green-600 focus:ring-green-500;
+  }
+  .forms-enabled .form-control-radio {
+    @apply w-4 h-4
+           text-green-600 bg-gray-100 border-gray-300
+           focus:ring-green-500 dark:focus:ring-green-600
+           dark:ring-offset-gray-800 focus:ring-2 
+           dark:bg-gray-700 dark:border-gray-600;
+  }
+  .forms-enabled .form-control-code {
+    @apply rounded-none rounded-s-lg
+           min-w-[120px] max-w-[120px];
+  }
+  .forms-enabled .form-btn-refresh-code {
+    @apply inline-flex items-center px-3 text-sm 
+           border border-s-0 rounded-e-md cursor-pointer
+           text-gray-900 dark:text-gray-400 
+           bg-gray-200 dark:bg-gray-600
+           border-gray-300 dark:border-gray-600;
+  }
+  .forms-enabled .form-btn-primary {
+    @apply px-4 py-2 mx-2 mb-3 text-sm rounded-md text-white
+           bg-green-700 hover:bg-green-800 disabled:opacity-50
+           cursor-pointer disabled:cursor-auto shadow min-w-[160px];
+  }
+  .forms-enabled .form-btn-secondary {
+    @apply px-4 py-2 mx-2 mb-3 text-sm rounded-md border content-center
+           border-gray-300 dark:border-gray-600
+           hover:bg-gray-100 dark:hover:bg-gray-800
+           cursor-pointer shadow min-w-[160px];
+  }
+  .forms-enabled .form-btn-link {
+    @apply block px-4 py-2 cursor-pointer
+           hover:bg-gray-100 dark:hover:bg-gray-800;
+  }
+
+  .forms-enabled .form-label {
+    @apply block mb-1 text-sm font-medium;
+  }
+  .forms-enabled .form-label-block-inline {
+    @apply lg:w-2/6 lg:text-right;
+  }
+  .forms-enabled .form-label-inline {
+    @apply !inline-flex items-center gap-2 mt-2 select-none;
+  }
+  .forms-enabled .form-label-radio {
+    @apply ms-2 me-5 text-sm font-medium 
+           text-gray-900 dark:text-gray-300;
+  }
+  .forms-enabled .form-control-short {
+    @apply max-w-[157px];
+  }
+  .forms-enabled .form-control-medium {
+    @apply max-w-[300px] min-w-[300px];
+  }
+  .forms-enabled .form-control-postal {
+    @apply min-w-[157px] max-w-[157px];
+  }
+  .forms-enabled .form-btn-clear {
+    @apply absolute top-1/2 -translate-y-1/2 
+           text-blue-600 hover:text-blue-900
+           dark:text-blue-600 dark:hover:text-blue-900
+           cursor-pointer;
+  }
+  .forms-enabled .form-control-img_preview {
+    @apply flex items-center justify-center
+           bg-no-repeat bg-top bg-cover
+           overflow-hidden rounded-full
+           w-[120px] min-w-[120px] h-[120px]
+           cursor-pointer mt-2 lg:mt-0;
+  }
+  .forms-enabled .form-btn-accordion {
+     @apply flex flex-col items-center
+            rounded-xl !border-2 shadow-xs
+            border-gray-500
+            w-full p-4 gap-3 cursor-pointer antialiased
+            bg-gray-100 dark:bg-gray-800
+            hover:bg-gray-200 dark:hover:bg-gray-700
+            transition-colors duration-200;
+  }
+  .forms-enabled .form-btn-accordion.form-btn-active {
+     @apply border-green-500 dark:border-green-600;
+  }
+}

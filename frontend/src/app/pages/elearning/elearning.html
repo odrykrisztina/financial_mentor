@@ -1,0 +1,317 @@
+<div class="min-h-full w-full flex flex-col justify-center py-6">
+  <div class="flex justify-center items-center mx-auto w-full">
+    
+    <div class="w-full px-2 ms:px-4 md:px-6 lg:px-8 xl:px-10 2xl:px-12
+                origin-center duration-300 ease-out transition-transform"
+         style="transform: scale(0);"
+         [style.transform]="mounted() ? 'scale(1)' : 'scale(0)'">
+
+      @if (!selectedItem()) {
+
+        <!-- Title -->
+        <div class="mb-5 flex flex-col sm:flex-row 
+                    justify-center items-center w-full">
+          <fa-icon [icon]="icon.faGraduationCap"
+                    class="fa-2xl me-0 sm:me-3"></fa-icon>
+          <div class="text-lg sm:text-xl md:text-2xl lg:text-3xl
+                      text-bold text-small-caps truncate capitalize-first">
+            <span> {{ lang.data['e_learning'] || 'e-learning' }} </span>
+          </div>
+        </div>
+
+        <!-- Quote and image -->
+        <section class="w-full flex flex-col justify-center
+                        xl:flex-row xl:justify-start">
+          <div class="flex flex-1 items-center">
+            <div class="w-full grid grid-cols-1 xl:grid-cols-2 
+                        gap-8 px-4 xl:pt-10">
+              <div class="w-full flex items-center justify-center 
+                          mb-5 px-2">
+                <div class="italic text-center
+                            max-w-lg md:max-w-xl lg:max-w-2xl
+                            text-md/7 sm:text-lg/8 md:text-xl/9 
+                            lg:text-xl/10 xl:text-2xl/16">
+                  " {{ lang.data['e_learning_zitat'] }} "
+                  <h3 class="mt-5 text-end">
+                    {{ getAuthorOfQuote() }}
+                  </h3>
+                </div>
+              </div>
+              <div class="px-2 flex justify-center items-center">
+                <img class="w-full rounded-md
+                            max-w-lg md:max-w-xl lg:max-w-2xl"
+                     alt="Logo"
+                     src="assets/media/image/pages/e-learning.webp" />
+              </div>
+            </div>
+          </div>
+        </section>
+
+      } @else {
+
+        <!-- Body -->
+        <div class="flex flex-col justify-center items-center">
+          <div class="text-center mx-auto space-y-4 max-w-4xl">
+
+            <!-- Title -->
+            <h2 class="mt-5 text-xl md:text-2xl font-semibold text-small-caps">
+              {{ selectedItem()!.title }}
+            </h2>
+
+            <!-- Attachments -->
+            @if (selectedItem()!.attachments?.length) {
+              <div class="w-full flex flex-col justify-center">
+                <div class="max-w-xl mx-auto">
+                  <h3 class="font-medium text-left">
+                    <span class="inline-block truncate capitalize-first">
+                      {{ lang.data['attachments'] || 'attachments' }}:
+                    </span>
+                  </h3>
+                  <ol class="list-decimal list-inside space-y-1 text-sm">
+                    @for (att of selectedItem()!.attachments!; track $index) {
+                      <li class="mb-5 text-left">
+                        @if (att.url || att.file_path) {
+                          @if (att.type === 'video/mp4') {
+                            <span class="font-semibold ms-2">
+                              {{ att.title }}
+                            </span>
+                            <div class="mt-3">
+                              <video #lessonVideo
+                                     class="w-full rounded-2xl shadow-lg 
+                                            border border-slate-700/40 object-cover"
+                                     [ngClass]="{'aspect-[9/16]': att.isPortrait, 
+                                                 'aspect-video': !att.isPortrait }"
+                                     [src]="att.file_path ? att.file_path : att.url"
+                                     muted
+                                     controls
+                                     preload="auto"
+                                     (play)="onVideoPlay(lessonVideo)">
+                              </video>
+                            </div>
+                          } @else {
+                            <a [href]="att.url"
+                              target="_blank"
+                              class="underline hover:no-underline">
+                              {{ att.title }} ({{ att.type }})
+                            </a>
+                          }
+                        } @else if (att.title || att.type) {
+                          <span>{{ att.title }} ({{ att.type }})</span>
+                        }
+                      </li>
+                    }
+                  </ol>
+                </div>
+              </div>
+            }
+
+            <!-- Tasks -->
+            @if (selectedItem()!.tasks?.length) {
+              <div class="pt-3">
+                <h3 class="font-medium mb-2 text-left text-lg">
+                  <span class="inline-block truncate capitalize-first">
+                    {{ lang.data['tasks'] || 'tasks' }}:
+                  </span>
+                </h3>
+                <ul class="list-inside space-y-2 
+                           text-sm leading-relaxed">
+
+                  <!-- Tasks -->
+                  @for (task of selectedItem()!.tasks!; track $index) {
+
+                    <!-- Task -->
+                    <li class="mb-10">
+
+                      <!-- Task button -->
+                      <div class="relative overflow-hidden">
+                        <div class="task-heading">
+                          <button type="button"
+                                  tabindex="-1"
+                                  class="form-btn-accordion !border-8"  
+                                  (click)="toggleTask($index)"
+                                  [class.form-btn-active]="openTaskIndex() === $index"
+                                  [class.form-btn-disabled]="isEditMode()">
+                                  
+                            <div class="flex flex-row items-center justify-between gap-2 w-full">
+                              
+                              <div class="flex items-center gap-2 min-w-0">
+                                <span class="truncate">
+                                  {{ $index + 1 }}. {{ task.title }}
+                                </span>
+                                @if (task.is_required) {
+                                  <span class="text-xs text-rose-500 whitespace-nowrap">
+                                    {{ lang.data['required'] || 'required' }}
+                                  </span>
+                                }
+                              </div>
+                              <span class="ms-1 inline-block transition-transform"
+                                    [class.rotate-180]="openTaskIndex() === $index">
+                                <fa-icon [icon]="icon.faAngleDown" class="fa-sm"></fa-icon>
+                              </span>
+                            </div>
+
+                            @if (task.description) {
+                              <div class="flex flex-row items-center justify-between gap-2 w-full">
+                                <p class="mt-1 whitespace-normal text-left">
+                                  {{ task.description }}
+                                </p>
+                              </div>
+                            }
+                          </button>
+                        </div>
+                      </div>
+
+                      <!-- Task body -->
+                      @if (openTaskIndex() === $index) {
+
+                        <div class="task-body w-full
+                                    border border-s-0 border-e-0 
+                                    border-t-0 border-b-default">
+
+                          <!-- Grid -->
+                          <div class="grid grid-cols px-2">
+                            <div class="mt-5">
+
+                              <!-- Input text -->
+                              @if (task.type === 'input-text') {
+
+                                <form #reactiveForm
+                                      [formGroup]="formGroup"
+                                      (ngSubmit)="confirm()"
+                                      class="w-full p-0"
+                                      novalidate>
+
+                                  <!-- Solution -->
+                                  <div class="mb-5">
+                                    <div class="flex flex-col items-start mb-1">
+                                      <label for="solution" 
+                                            class="form-label mb-2"
+                                            [class.form-label-disabled]="!isEditMode()">
+                                        <div class="flex items-center justify-start">
+                                          <fa-icon [icon]="icon.faStar" 
+                                                    class="me-1 text-red-500 text-[6px]"></fa-icon>
+                                          <fa-icon [icon]="icon.faSquarePollHorizontal" 
+                                                    class="me-1 fa-xl"></fa-icon>
+                                          <span class="truncate capitalize-first text-lg">
+                                            {{ lang.data['solution'] || 'solution' }}:
+                                          </span>
+                                        </div>
+                                      
+                                        @if (task.min_length && task.min_length > 0) {
+                                          <div class="flex flex-row pt-1">
+                                            <div class="text-[11px] truncate capitalize-first">
+                                              {{ lang.data['solution_min_length'] }}: 
+                                              {{ task.min_length }}
+                                            </div>
+                                          </div>
+                                        }
+                                      </label>
+                                      <div class="relative w-full">
+                                        <textarea #solutionInput
+                                                  id="solution"
+                                                  formControlName="solution"
+                                                  autocomplete="off"
+                                                  spellcheck="false"
+                                                  class="form-control"
+                                                  [class.form-disabled]="!isEditMode()"
+                                                  rows="10">
+                                        </textarea>
+                                        @if (f.solution.value) {
+                                          <button type="button"
+                                                  tabindex="-1"
+                                                  (click)="clear('solution')"
+                                                  class="form-btn-clear top-5 right-2"
+                                                  [class.hidden]="!isEditMode()">
+                                            <fa-icon [icon]="icon.faXmark" class="fa-2xs"></fa-icon>
+                                          </button>
+                                        }
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  <!-- Buttons -->
+                                  <div class="text-center mb-3">
+
+                                    <!-- Submit -->
+                                    <button type="submit"
+                                            [disabled]="isFormGroupInvalid()"
+                                            [class.hidden]="isEditMode()"
+                                            class="form-btn-primary mb-3 p-3">
+                                      <div class="flex items-center justify-center">
+                                        <fa-icon [icon]="icon.faPaperPlane" class="fa-lg me-1"></fa-icon>
+                                        <span class="truncate capitalize-first">
+                                          {{ lang.data['send'] || 'send' }}
+                                        </span>
+                                      </div>
+                                    </button>
+
+                                    <!-- Start -->
+                                    <button type="button"
+                                            (click)="toggleEdit('start-modify')"
+                                            [class.hidden]="isEditMode()"
+                                            class="form-btn-primary mb-3 p-3">
+                                      <div class="flex items-center justify-center">
+                                        <fa-icon [icon]="icon.faPenToSquare" class="fa-lg me-1"></fa-icon>
+                                        <span class="truncate capitalize-first">
+                                          @if (isFormGroupInvalid()) {
+                                            {{ lang.data['solution_start'] || 'solution_start' }}
+                                          } @else {
+                                            {{ lang.data['modify'] || 'modify' }}
+                                          }
+                                        </span>
+                                      </div>
+                                    </button>
+
+                                    <!-- Completed -->
+                                    <button type="button"
+                                            (click)="toggleEdit('completed')"
+                                            [disabled]="formGroup.invalid"
+                                            [class.hidden]="!isEditMode()"
+                                            class="form-btn-primary mb-3 p-3">
+                                      <div class="flex items-center justify-center">
+                                        <fa-icon [icon]="icon.faCheck" 
+                                                  class="fa-lg me-1"></fa-icon>
+                                        <span class="truncate capitalize-first">
+                                          {{ lang.data['completed'] || 'completed' }}
+                                        </span>
+                                      </div>
+                                    </button>
+
+                                    <!-- Interrup -->
+                                    <button type="button"
+                                            class="form-btn-secondary mb-3 p-3"
+                                            (click)="toggleEdit('interrupt')"
+                                            [class.hidden]="!isEditMode()">
+                                      <div class="flex items-center justify-center">
+                                        <fa-icon [icon]="icon.faCircleXmark" 
+                                                  class="fa-lg me-1"></fa-icon>
+                                        <span class="capitalize">
+                                          {{ lang.data['interrupt'] || 
+                                                      'interrupt' }}
+                                        </span>
+                                      </div>
+                                    </button>
+                                  </div>
+                                </form>
+                              }
+                            </div>
+                          </div>
+                        </div>
+                      }
+                    </li>
+                  }
+                </ul>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>
+
+<!-- Sidebar -->
+<app-sidebar position="left"  
+             [topOffset]="headerHeight" 
+             title="e_learning">
+</app-sidebar>

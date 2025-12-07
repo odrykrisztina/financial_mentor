@@ -1,0 +1,28 @@
+<div class="min-h-full w-screen flex flex-col justify-center py-6">
+  <div class="flex justify-center items-center mx-auto w-screen">
+    
+    <div class="w-screen px-2 ms:px-4 md:px-6 lg:px-8 xl:px-10 2xl:px-12
+                origin-center duration-300 ease-out transition-transform"
+         style="transform: scale(0);"
+         [style.transform]="mounted() ? 'scale(1)' : 'scale(0)'">
+
+      <!-- Title -->
+      <div class="flex flex-col sm:flex-row 
+                  justify-center items-center w-full mt-5">
+        <fa-icon [icon]="icon.faListCheck"
+                  class="fa-2xl me-0 sm:me-3"></fa-icon>
+        <div class="text-lg sm:text-xl md:text-2xl lg:text-3xl mt-5 sm:mt-0
+                    text-bold text-small-caps truncate capitalize-first">
+          <span> {{ lang.data['tasks'] || 'tasks' }} </span>
+        </div>
+      </div>
+
+      <!-- Body -->
+      <div class="max-h-[50vh] mt-5 overflow-y-auto text-center">
+        <span class="truncate capitalize-first inline-block">
+          {{ lang.data['under_development'] || 'under development' }}...
+        </span>
+      </div>
+    </div>
+  </div>
+</div>

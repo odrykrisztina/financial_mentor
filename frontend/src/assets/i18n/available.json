@@ -1,0 +1,29 @@
+[
+  {
+    "id":"de",
+    "dir": "ltr",
+    "type":"west",
+    "name":"german",
+    "local":"deutsch",
+    "img":"deu.png",
+    "valid":true
+  },
+  {
+    "id":"en",
+    "dir": "ltr",
+    "type":"west",
+    "name":"english",
+    "local":"english",
+    "img":"usa.png",
+    "valid":true
+  },
+  {
+    "id":"hu",
+    "dir": "ltr",
+    "type":"east",
+    "name":"hungarian",
+    "local":"magyar",
+    "img":"hun.png",
+    "valid":true
+  }
+]

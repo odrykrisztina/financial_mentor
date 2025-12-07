@@ -1,0 +1,619 @@
+<div class="min-h-full w-full flex flex-col justify-center py-6">
+  <div class="flex justify-center items-center mx-auto w-full">
+
+    <!-- Form -->
+    <form #reactiveForm
+          [formGroup]="formGroup"
+          (ngSubmit)="confirm()"
+          class="w-full max-w-8xl p-2
+                 origin-center duration-300 ease-out"
+          style="transform: scale(0);"
+          [style.transform]="mounted() ? 'scale(1)' : 'scale(0)'"
+          novalidate>
+
+      <!-- Title -->
+      <h1 class="flex justify-center items-center mb-5">
+        <fa-icon [icon]="icon.faIdCard" class="fa-2xl me-3"></fa-icon>
+        <span class="truncate capitalize-first 
+                     text-small-caps text-3xl tracking-wider">
+          {{ lang.data['profile'] || 'profile' }}
+        </span>
+      </h1>
+
+      <!-- Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 px-2
+                  lg:mx-0 xl:px-10 2xl:px-20 mb-3 sm:mb-0">
+
+        <!-- Form group 1 -->
+        <div class="px-5">
+
+          <!-- Name label -->
+          <div class="mb-1">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:space-x-4">
+              <div class="hidden lg:block lg:w-2/6"></div>
+              <div class="lg:w-4/6">
+                <div class="flex w-full items-center">
+                  <fa-icon [icon]="icon.faUser" class="me-1 fa-md"></fa-icon>
+                  <span class="truncate capitalize-first text-md 
+                               text-gray-900 dark:text-white">
+                    {{ lang.data['name'] || 'name' }}:
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Name components -->
+          <div class="mb-3">
+            @for (key of nameKeys; track key) {
+              <div class="flex flex-col lg:flex-row lg:items-center lg:space-x-4 mb-1">
+                <label [for]="`${key}_name`"
+                       class="form-label form-label-block-inline">
+                  <div class="flex items-center justify-start lg:justify-end">
+                    @if (['first','last'].includes(key)) {
+                      <fa-icon [icon]="icon.faStar"
+                      class="me-1 text-red-500 text-[6px]"></fa-icon>
+                    }
+                    <span class="truncate capitalize-first 
+                                text-gray-900 dark:text-white">
+                      {{ lang.data[`${key}_name`] }}:
+                    </span>
+                  </div>
+                </label>
+                <div class="mt-1 lg:mt-0 lg:w-4/6">
+                  <div class="flex items-center">
+                    <div class="relative w-full">
+                      <input type="text"
+                             [formControlName]="`${key}_name`"
+                             [id]="`${key}_name`"
+                             data-fc="`${key}_name`"
+                             class="form-control"
+                             [class.form-control-medium]="['prefix','postfix'].includes(key)"
+                             autocomplete="off"
+                             spellcheck="false"
+                             [attr.maxlength]="['prefix','postfix'].includes(key)?'20':'100'"
+                             [placeholder]="lang.data[`${key}_name`]"/>
+                      @if (!isEmpty(key)) {
+                        <button type="button"
+                                tabindex="-1"
+                                (click)="clear(key)"
+                                class="form-btn-clear right-2"
+                                [ngClass]="{'right-2': !['prefix','postfix'].includes(key), 
+                                            'left-[278px]': ['prefix','postfix'].includes(key)}">
+                          <fa-icon [icon]="icon.faXmark" class="fa-2xs"></fa-icon>
+                        </button>
+                      }
+                    </div>
+                    <fa-icon [icon]="icon.faCheck"
+                             class="ms-2 text-green-700"
+                             [ngClass]="{
+                                'opacity-0': !isNameRequired(key),
+                                'invisible': isNameRequired(key) && !isNameValid(key)
+                             }">
+                    </fa-icon>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Born -->
+          <div class="mb-1">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:space-x-4 mb-1">
+              <label for="born"
+                class="form-label form-label-block-inline">
+                <div class="flex items-center justify-start lg:justify-end">
+                  <fa-icon [icon]="icon.faStar"
+                           class="me-1 text-red-500 text-[6px]"></fa-icon>
+                  <fa-icon [icon]="icon.faCalendarDays" class="me-1"></fa-icon>
+                  <span class="truncate capitalize-first 
+                               text-gray-900 dark:text-white">
+                    {{ lang.data['born'] || 'born' }}:
+                  </span>
+                </div>
+              </label>
+              <div class="mt-1 lg:mt-0 lg:w-4/6">
+                <div class="flex items-center">
+                  <div class="relative inline-block">
+                    <input type="date"
+                           formControlName="born"
+                           [max]="getDate(-18)"
+                           id="born"
+                           class="form-control form-control-medium 
+                                  dark:[color-scheme:dark]"
+                           autocomplete="off" />
+                    @if (f.born.value) {
+                      <button type="button"
+                              (click)="clear('born')"
+                              tabindex="-1"
+                              class="form-btn-clear right-2">
+                        <fa-icon [icon]="icon.faXmark" class="fa-2xs"></fa-icon>
+                      </button>
+                    }
+                  </div>
+                  <fa-icon [icon]="icon.faCheck"
+                           [ngClass]="{'invisible': !f.born.valid}"
+                           class="ms-2 text-green-700"></fa-icon>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Born rule -->
+          <div class="mb-3">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:space-x-4">
+              <div class="hidden lg:block lg:w-2/6"></div>
+              <div class="lg:w-4/6 text-[11px]">
+                {{ lang.data['born_rule'] }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Gender -->
+          <div class="mb-3">
+            <div class="flex lg:flex-row items-center lg:space-x-4 mb-1 h-10">
+              <div class="block text-sm font-medium form-label-block-inline">
+                <div class="flex items-center justify-start lg:justify-end">
+                  <fa-icon [icon]="icon.faStar"
+                           class="me-1 text-red-500 text-[6px]"></fa-icon>
+                  <fa-icon [icon]="icon.faVenusMars" class="me-1"></fa-icon>
+                  <span class="truncate capitalize-first text-gray-900 dark:text-white">
+                    {{ lang.data['gender'] || 'gender' }}:
+                  </span>
+                </div>
+              </div>
+              <div class="ms-5 lg:ms-0 lg:w-4/6">
+                <div class="flex flex-row w-full items-center">
+                  <input id="female"
+                         type="radio"
+                         name="gender"
+                         formControlName="gender"
+                         [value]="'F'"
+                         (change)="onGenderChanged()"
+                         class="form-control-radio">
+                  <label for="female"
+                         class="form-label-radio">
+                    {{ lang.data['woman'] || 'woman' }}
+                  </label>
+                  <input id="male"
+                         type="radio"
+                         name="gender"
+                         formControlName="gender"
+                         [value]="'M'"
+                         (change)="onGenderChanged()"
+                         class="form-control-radio">
+                  <label for="male"
+                         class="form-label-radio">
+                    {{ lang.data['man'] || 'man' }}
+                  </label>
+                  <fa-icon [icon]="icon.faCheck"
+                           [ngClass]="{'invisible': !f.gender.valid}"
+                           class="ms-5 text-green-700">
+                  </fa-icon>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form group 2 -->
+        <div class="px-5">
+
+          <!-- Image -->
+          <div class="mb-3">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:space-x-4 mb-1">
+              <div class="block text-sm font-medium form-label-block-inline">
+                <div class="flex items-center justify-start lg:justify-end">
+                  <fa-icon [icon]="icon.faIdCard" class="me-1"></fa-icon>
+                  <span class="truncate capitalize-first 
+                               text-gray-900 dark:text-white">
+                    {{ lang.data['image'] || 'image' }}:
+                  </span>
+                </div>
+              </div>
+              <div class="me-0 mt-1 lg:mt-0 lg:w-2/6">
+                <div class="inline-block relative">
+                  <input id="image"
+                         type="file"
+                         #fileInput
+                         data-fc="image"
+                         (change)="onImageChanged($event)"
+                         accept="image/*"
+                         class="hidden"
+                         spellcheck="false"
+                         autocomplete="off">
+                  <label for="image">
+                    <div class="form-control-img_preview"
+                         [ngClass]="{ 'border': !hasCustomImage && !f.gender.valid }"
+                         [style.background-image]="imageStyle">
+                      <span class="text-[9px]"
+                            [ngClass]="{ 'invisible': hasCustomImage || f.gender.valid }">
+                        <fa-icon [icon]="icon.faUpload" class="me-1"></fa-icon>
+                        <span>Max: {{getImgMaxSize()}}KB</span>
+                      </span>
+                    </div>
+                  </label>
+                  <button type="button"
+                          tabindex="-1"
+                          class="form-btn-clear right-[-40px]"
+                          [ngClass]="{ 'invisible': !hasCustomImage }"
+                          (click)="clearImage(fileInput)">
+                    <fa-icon [icon]="icon.faXmark" class="fa-2xs"></fa-icon>
+                  </button>
+                </div>
+              </div>
+              <div class="mt-2 lg:mt-0 lg:w-2/6">
+                <div class="flex w-full items-center justify-start">
+                  <p class="text-[12px] text-red-600">{{ imageError }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Phone -->
+          <div class="mb-3">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:space-x-4 mb-1">
+              <label for="phone"
+                     class="form-label form-label-block-inline">
+              <div class="flex items-center justify-start lg:justify-end">
+                <fa-icon [icon]="icon.faStar"
+                         class="me-1 text-red-500 text-[6px]"></fa-icon>
+                <fa-icon [icon]="icon.faMobileScreenButton" class="me-1"></fa-icon>
+                <span class="truncate capitalize-first text-gray-900 dark:text-white">
+                  {{ lang.data['phone'] || 'phone' }}:
+                </span>
+              </div>
+              </label>
+              <div class="mt-1 lg:mt-0 lg:w-4/6">
+                <div class="flex items-center">
+                  <div class="relative w-full">
+                    <input type="tel"
+                           formControlName="phone"
+                           id="phone"
+                           maxlength="20"
+                           class="form-control"
+                           autocomplete="off"
+                           spellcheck="false"
+                           [placeholder]="lang.data['phone'] || 'phone'"/>
+                    @if (f.phone.value) {
+                      <button type="button"
+                              tabindex="-1"
+                              (click)="clear('phone')"
+                              class="form-btn-clear right-2">
+                        <fa-icon [icon]="icon.faXmark" class="fa-2xs"></fa-icon>
+                      </button>
+                    }
+                  </div>
+                  <fa-icon [icon]="icon.faCheck"
+                           [ngClass]="{'invisible': !f.phone.valid}"
+                           class="ms-2 text-green-700">
+                  </fa-icon>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Residence -->
+          <div class="mb-3">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:space-x-4 mb-1">
+              <label for="residence"
+                     class="form-label form-label-block-inline">
+                <div class="flex items-center justify-start lg:justify-end">
+                  <fa-icon [icon]="icon.faStar"
+                           class="me-1 text-red-500 text-[6px]"></fa-icon>
+                  <fa-icon [icon]="icon.faCity" class="me-1"></fa-icon>
+                  <span class="truncate capitalize-first text-gray-900 dark:text-white">
+                    {{ lang.data['residence'] || 'residence' }}:
+                  </span>
+                </div>
+              </label>
+              <div class="mt-1 lg:mt-0 lg:w-4/6">
+                <div class="flex items-center">
+                  <div class="relative w-full">
+                    <input type="text"
+                           formControlName="residence"
+                           id="residence"
+                           maxlength="100"
+                           class="form-control"
+                           autocomplete="off"
+                           spellcheck="false"
+                           [placeholder]="lang.data['residence'] || 'residence'"/>
+                    @if (f.residence.value) {
+                      <button type="button"
+                              tabindex="-1"
+                              (click)="clear('residence')"
+                              class="form-btn-clear right-2">
+                        <fa-icon [icon]="icon.faXmark" class="fa-2xs"></fa-icon>
+                      </button>
+                    }
+                  </div>
+                  <fa-icon [icon]="icon.faCheck"
+                           [ngClass]="{'invisible': !f.residence.valid}"
+                           class="ms-2 text-green-700">
+                  </fa-icon>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Postal code -->
+          <div class="mb-3">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:space-x-4 mb-1">
+              <label for="postal_code"
+                     class="form-label form-label-block-inline">
+                <div class="flex items-center justify-start lg:justify-end">
+                  <fa-icon [icon]="icon.faStar"
+                           class="me-1 text-red-500 text-[6px]"></fa-icon>
+                  <fa-icon [icon]="icon.faEnvelopesBulk" class="me-1"></fa-icon>
+                  <span class="truncate capitalize-first text-gray-900 dark:text-white">
+                    {{ lang.data['postal_code'] || 'postal_code' }}:
+                  </span>
+                </div>
+              </label>
+              <div class="mt-1 lg:mt-0 lg:w-4/6">
+                <div class="flex items-center">
+                  <div class="w-full">
+                    <div class="inline-block relative">
+                      <input type="text"
+                            formControlName="postal_code"
+                            id="postal_code"
+                            maxlength="20"
+                            class="form-control form-control-postal"
+                            autocomplete="off"
+                            spellcheck="false"
+                            [placeholder]="lang.data['postal_code'] || 'postal_code'"/>
+                      @if (f.postal_code.value) {
+                        <button type="button"
+                                tabindex="-1"
+                                (click)="clear('postal_code')"
+                                class="form-btn-clear right-2">
+                          <fa-icon [icon]="icon.faXmark" class="fa-2xs"></fa-icon>
+                        </button>
+                      }
+                    </div>
+                  </div>
+                  <fa-icon [icon]="icon.faCheck"
+                           [ngClass]="{'invisible': !f.postal_code.valid}"
+                           class="ms-2 text-green-700">
+                  </fa-icon>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Address -->
+          <div class="mb-3">
+            <div class="flex flex-col lg:flex-row lg:items-start lg:space-x-4 mb-1">
+              <label for="address"
+                     class="form-label form-label-block-inline lg:mt-2">
+                <div class="flex items-center justify-start lg:justify-end">
+                  <fa-icon [icon]="icon.faStar"
+                           class="me-1 text-red-500 text-[6px]"></fa-icon>
+                  <fa-icon [icon]="icon.faLocationDot" class="me-1"></fa-icon>
+                  <span class="truncate capitalize-first 
+                               text-gray-900 dark:text-white">
+                    {{ lang.data['address'] || 'address' }}:
+                  </span>
+                </div>
+              </label>
+              <div class="mt-1 lg:mt-0 lg:w-4/6">
+                <div class="flex items-start">
+                  <div class="relative w-full">
+                    <textarea id="address"
+                              formControlName="address"
+                              maxlength="200"
+                              class="form-control"
+                              autocomplete="off"
+                              spellcheck="false"
+                              [placeholder]="lang.data['address'] || 'address'"
+                              rows="2">
+                    </textarea>
+                    @if (f.address.value) {
+                      <button type="button"
+                              tabindex="-1"
+                              (click)="clear('address')"
+                              class="form-btn-clear top-5 right-2">
+                        <fa-icon [icon]="icon.faXmark" class="fa-2xs"></fa-icon>
+                      </button>
+                    }
+                  </div>
+                  <fa-icon [icon]="icon.faCheck"
+                           [ngClass]="{'invisible': !f.address.valid}"
+                           class="ms-2 mt-2 text-green-700">
+                  </fa-icon>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Separator -->
+      <div class="flex justify-center w-full mt-5">
+        <hr class="w-5/6 text-gray-500">
+      </div>
+
+      <!-- Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 px-2 mt-10
+                  lg:mx-0 xl:px-10 2xl:px-20 mb-3 sm:mb-0">
+
+        <!-- Form grroup 1 -->
+        <div class="px-5 ">
+
+          <!-- Password -->
+          <div class="mb-1">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:space-x-4 mb-1">
+              <label for="password"
+                     class="form-label form-label-block-inline">
+                <div class="flex items-center justify-start lg:justify-end">
+                  <fa-icon [icon]="icon.faStar"
+                           class="me-1 text-red-500 text-[6px]"></fa-icon>
+                  <fa-icon [icon]="icon.faKey" class="me-1"></fa-icon>
+                  <span class="truncate capitalize-first 
+                               text-gray-900 dark:text-white">
+                    {{ lang.data['password'] || 'password' }}:
+                  </span>
+                </div>
+              </label>
+              <div class="mt-1 lg:mt-0 lg:w-4/6">
+                <div class="flex items-center">
+                  <div class="relative inline-block">
+                    <input #passwordInput
+                           id="password"
+                           [type]="f.showPassword.value ? 'text' : 'password'"
+                           formControlName="password"
+                           autocomplete="current-password"
+                           spellcheck="false"
+                           class="form-control form-control-medium" 
+                           maxlength="20"/>
+                    @if (f.password.value) {
+                      <button type="button"
+                              (click)="clear('password')"
+                              tabindex="-1"
+                              class="form-btn-clear right-2">
+                        <fa-icon [icon]="icon.faXmark" class="fa-2xs"></fa-icon>
+                      </button>
+                    }
+                  </div>
+                  <fa-icon [icon]="icon.faCheck"
+                           [ngClass]="{'invisible': !f.password.valid}"
+                           class="ms-2 text-green-700"></fa-icon>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Password rule -->
+          <div class="mb-0">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:space-x-4">
+              <div class="hidden lg:block lg:w-2/6"></div>
+              <div class="lg:w-4/6 text-[11px]">
+                {{ lang.data['password_rule'] }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Show password -->
+          <div class="mb-5">
+            <div class="flex lg:flex-row items-center lg:space-x-4 mb-2">
+              <div class="block text-sm font-medium lg:w-2/6 lg:text-right"></div>
+              <div class="lg:w-4/6">
+                <label for="showPassword"
+                       class="form-label-inline">
+                  <input id="showPassword"
+                         type="checkbox"
+                         formControlName="showPassword"
+                         class="form-control-checkbox"
+                         tabindex="-1">
+                  <div class="flex items-center">
+                    <fa-icon [icon]="icon.faEye" class="fa-sm mx-2"></fa-icon>
+                    <span class="text-sm">
+                      {{ lang.data['password_show'] || 'show password' }}
+                    </span>
+                  </div>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form grroup 2 -->
+        <div class="px-5">
+
+          <!-- Test code -->
+          <div class="mb-5">
+            <div class="flex flex-row lg:items-center lg:space-x-4 mb-1">
+              <div class="text-sm font-medium 
+                          w-auto lg:w-2/6 lg:text-right">
+                <div class="flex items-center
+                            justify-start lg:justify-end">
+                  <fa-icon [icon]="icon.faHandPointRight"
+                           class="fa-2xl"></fa-icon>:
+                </div>
+              </div>
+              <div class="lg:w-4/6">
+                <div class="flex items-center text-xl ps-3 lg:ps-0
+                            font-bold tracking-wider">
+                  {{ testCode }}
+                </div>
+              </div>
+            </div>
+            <div class="mb-3">
+              <div class="flex flex-col lg:flex-row lg:items-center lg:space-x-4 mb-0">
+                <label for="code"
+                       class="form-label form-label-block-inline">
+                  <div class="flex items-center me-3 lg:me-0 mb-1 lg:mb-0 
+                              justify-start lg:justify-end">
+                    <fa-icon [icon]="icon.faStar"
+                             class="me-1 text-red-500 text-[6px]"></fa-icon>
+                    <fa-icon [icon]="icon.faRobot" class="me-1"></fa-icon>
+                    <span class="truncate capitalize-first 
+                                 text-gray-900 dark:text-white">
+                      {{ lang.data['code'] || 'code' }}:
+                    </span>
+                  </div>
+                </label>
+                <div class="flex items-center w-full lg:w-4/6">
+                  <div class="flex items-center w-full">
+                    <div class="relative flex">
+                      <input type="text"
+                             id="code"
+                             formControlName="code"
+                             class="form-control form-control-code"
+                             spellcheck="false"
+                             autocomplete="off"
+                             maxlength="6">
+                      @if (f.code.value) {
+                        <button type="button"
+                                tabindex="-1"
+                                (click)="clear('code')"
+                                class="form-btn-clear right-12">
+                          <fa-icon [icon]="icon.faXmark" class="fa-2xs"></fa-icon>
+                        </button>
+                      }
+                      <span class="form-btn-refresh-code"
+                            (click)="getTestCode()">
+                        <fa-icon [icon]="icon.faArrowsRotate" class="fa-xs"></fa-icon>
+                      </span>
+                    </div>
+                    <fa-icon [icon]="icon.faCheck"
+                             [ngClass]="{'invisible': !f.code.valid}"
+                             class="ms-7 text-green-700"></fa-icon>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Buttons -->
+      <div class="text-center">
+
+        <!-- Submit -->
+        <button type="submit"
+                [disabled]="formGroup.invalid"
+                class="form-btn-primary">
+          <div class="flex items-center justify-center">
+            <fa-icon [icon]="icon.faFloppyDisk" class="fa-lg me-1"></fa-icon>
+            <span class="capitalize">
+              {{ lang.data['save'] || 'save' }}
+            </span>
+          </div>
+        </button>
+
+        <!-- Cancel -->
+        <button type="button"
+                (click)="onCancel()"
+                class="form-btn-secondary">
+          <div class="flex items-center justify-center">
+            <fa-icon [icon]="icon.faCircleXmark" class="fa-lg me-1"></fa-icon>
+            <span class="capitalize">
+              {{ lang.data['cancel'] || 'cancel' }}
+            </span>
+          </div>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

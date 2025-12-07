@@ -1,0 +1,855 @@
+<nav class="antialiased p-2
+            bg-gray-100 dark:bg-gray-800">
+  <div class="relative flex flex-wrap items-center justify-between">
+
+    <!-- Logo -->
+    <div class="flex items-center space-x-3 rtl:space-x-reverse">
+      <img class="h-12 me-2" alt="Logo"
+           src="assets/media/image/logo/logo-finance.png" />
+      <span class="block self-center text-xl font-semibold 
+                   whitespace-nowrap dark:text-white
+                   truncate capitalize-first text-small-caps">
+        {{ lang.data['financial_mentor'] || 'financial_mentor' }}
+      </span>
+    </div>
+
+    <!-- Navbar FIX RIGHT -->
+    <div class="flex items-center
+                xl:order-2 space-x-3 
+                xl:space-x-0 rtl:space-x-reverse list-none">
+
+      <!-- Navbar -->
+      <ul class="flex items-center justify-end">
+
+        <!-- User -->
+        <li #userRoot
+            class="px-1 py-0 rounded relative
+                  hover:bg-gray-200 dark:hover:bg-gray-700">
+
+          <!-- User button -->
+          <button type="button" 
+                  class="flex cursor-pointer" 
+                  (click)="toggle('user', $event)">
+            <div class="flex items-center">
+              @if (isLoggedIn()) {
+                <div class="w-10 h-10
+                            rounded-full bg-top bg-cover me-2"
+                     [style.background-image]="'url(' + 
+                     (user()!.img || 
+                     (user()!.gender === 'F' ? 
+                            'assets/media/image/blank/female-blank.webp' : 
+                            'assets/media/image/blank/male-blank.webp')) + ')'">
+                </div>
+              } @else {
+                <img class="w-8 h-8 my-1 rounded-full me-2" 
+                     src="assets/media/image/blank/user_blank.png" 
+                     alt="User photo">
+              }
+              <span class="hidden sm:block">
+                <span class="capitalize text-small-caps">
+                  {{ lang.data['user'] || 'user' }}
+                </span>
+                <span class="ms-1 inline-block transition-transform"
+                      [class.rotate-180]="isOpen('user')">
+                  <fa-icon [icon]="icon.faAngleDown" 
+                          class="fa-sm"></fa-icon>
+                </span>
+              </span>
+            </div>
+          </button>
+
+          <!-- User dropdown -->
+          <ul class="absolute z-10 w-max min-w-[200px]
+                     !end-0 !top-14 py-2 whitespace-nowrap
+                     text-base list-none
+                     divide-gray-100 shadow-sm dark:divide-gray-600
+                     bg-gray-200 dark:bg-gray-700
+                     border rounded-lg 
+                     border-gray-300 dark:border-gray-500"
+              [class.hidden]="!isOpen('user')">
+
+            <!-- Check user logged -->
+            @if (isLoggedIn()) {
+
+              <!-- User properties -->
+              <li class="block px-4 pb-2 truncate">
+                <div class="block text-gray-900 dark:text-white">
+                  @for (key of nameKeys; track key) {
+                    <span>
+                      {{ user()![`${key}_name`] }}
+                    </span>
+                  }
+                </div>
+                <div class="text-sm text-gray-500 dark:text-gray-400">
+                  {{ user()!.email }}
+                </div>
+              </li>
+
+              <li><hr class="my-1 border-gray-600" role="separator"></li>
+            }
+
+            <!-- User -->
+            <li [ngClass]="{'grid grid-cols-1 md:grid-cols-2': 
+                             isLoggedIn() && user()!.type === 'W'}">
+
+              <!-- Workers -->
+              @if (isLoggedIn() && user()!.type === 'W') {
+                <ul>
+                  
+                  <!-- E-Learning -->
+                  <li class="block">
+                    <a routerLink="/elearning"
+                       routerLinkActive="!cursor-default !text-gray-400 dark:!text-gray-400"
+                       [routerLinkActiveOptions]="{ exact: true }" 
+                       [ngClass]="{ 'pointer-events-none': isActive('elearning') }"
+                       class="block px-4 py-2
+                              hover:bg-gray-100 dark:hover:bg-gray-800">
+                      <div class="flex items-center">
+                        <fa-icon [icon]="icon.faGraduationCap" 
+                                class="fa-lg me-1"></fa-icon>
+                        <span class="capitalize text-small-caps">
+                          {{ lang.data['e_learning'] || 'e-learning' }}
+                        </span>
+                      </div>
+                    </a>
+                  </li>
+
+                  <!-- Messages -->
+                  <li class="block">
+                    <a routerLink="/messages"
+                       routerLinkActive="!cursor-default !text-gray-400 dark:!text-gray-400"
+                       [routerLinkActiveOptions]="{ exact: true }" 
+                       [ngClass]="{ 'pointer-events-none': isActive('messages') }"
+                       class="block px-4 py-2
+                              hover:bg-gray-100 dark:hover:bg-gray-800">
+                      <div class="flex items-center">
+                        <fa-icon [icon]="icon.faMessage" 
+                                class="fa-lg me-1"></fa-icon>
+                        <span class="capitalize text-small-caps">
+                          {{ lang.data['messages'] || 'messages' }}
+                        </span>
+                      </div>
+                    </a>
+                  </li>
+                  
+                  <!-- Contracts -->
+                  <li class="block">
+                    <a routerLink="/contracts"
+                       routerLinkActive="!cursor-default !text-gray-400 dark:!text-gray-400"
+                       [routerLinkActiveOptions]="{ exact: true }" 
+                       [ngClass]="{ 'pointer-events-none': isActive('contracts') }"
+                       class="block px-4 py-2
+                              hover:bg-gray-100 dark:hover:bg-gray-800">
+                      <div class="flex items-center">
+                        <fa-icon [icon]="icon.faHandshake" 
+                                class="fa-lg me-1"></fa-icon>
+                        <span class="capitalize text-small-caps">
+                          {{ lang.data['contracts'] || 'contracts' }}
+                        </span>
+                      </div>
+                    </a>
+                  </li>
+
+                  <!-- Tasks -->
+                  <!-- <li class="block">
+                    <a routerLink="/tasks"
+                       routerLinkActive="!cursor-default !text-gray-400 dark:!text-gray-400"
+                       [routerLinkActiveOptions]="{ exact: true }" 
+                       [ngClass]="{ 'pointer-events-none': isActive('tasks') }"
+                       class="block px-4 py-2
+                              hover:bg-gray-100 dark:hover:bg-gray-800">
+                      <div class="flex items-center">
+                        <fa-icon [icon]="icon.faListCheck" 
+                                class="fa-lg me-1"></fa-icon>
+                        <span class="capitalize text-small-caps">
+                          {{ lang.data['tasks'] || 'tasks' }}
+                        </span>
+                      </div>
+                    </a>
+                  </li> -->
+                </ul>
+              }
+
+              <!-- Users-->
+              <ul>
+
+                <!-- Check user logged -->
+                @if (isLoggedIn()) {
+
+                  <!-- Profile -->
+                  <li class="block">
+                    <a routerLink="/profile"
+                      routerLinkActive="!cursor-default !text-gray-400 dark:!text-gray-400"
+                      [routerLinkActiveOptions]="{ exact: true }" 
+                      [ngClass]="{ 'pointer-events-none': isActive('profile') }"
+                      class="block px-4 py-2
+                              hover:bg-gray-100 dark:hover:bg-gray-800">
+                      <div class="flex items-center">
+                        <fa-icon [icon]="icon.faIdCard" 
+                                class="fa-lg me-1"></fa-icon>
+                        <span class="capitalize text-small-caps">
+                          {{ lang.data['profile'] || 'profile' }}
+                        </span>
+                      </div>
+                    </a>
+                  </li>
+
+                  <!-- Change password -->
+                  <li class="block">
+                    <a routerLink="/password-change"
+                      routerLinkActive="!cursor-default !text-gray-400 dark:!text-gray-400"
+                      [routerLinkActiveOptions]="{ exact: true }" 
+                      [ngClass]="{ 'pointer-events-none': isActive('password-change') }"
+                      class="block px-4 py-2
+                             hover:bg-gray-100 dark:hover:bg-gray-800">
+                      <div class="flex items-center">
+                        <fa-icon [icon]="icon.faKey" 
+                                class="fa-lg me-1"></fa-icon>
+                        <div class="truncate capitalize-first text-small-caps">
+                          <span>
+                            {{ lang.data['password_change'] || 'password change' }}
+                          </span>
+                        </div>
+                      </div>
+                    </a>
+                  </li>
+
+                  <!-- Change email -->
+                  <li class="block">
+                    <a routerLink="/email-change"
+                      routerLinkActive="!cursor-default !text-gray-400 dark:!text-gray-400"
+                      [routerLinkActiveOptions]="{ exact: true }" 
+                      [ngClass]="{ 'pointer-events-none': isActive('email-change') }"
+                      class="block px-4 py-2
+                             hover:bg-gray-100 dark:hover:bg-gray-800">
+                      <div class="flex items-center">
+                        <fa-icon [icon]="icon.faEnvelope" 
+                                  class="fa-lg me-1"></fa-icon>
+                        <div class="truncate capitalize-first text-small-caps">
+                          <span>
+                            {{ lang.data['email_change'] || 'email change' }}
+                          </span>
+                        </div>
+                      </div>
+                    </a>
+                  </li>
+
+                  <!-- Settings - Administrator -->
+                  @if (user()!.type === 'A' ||
+                       user()!.worker_id === 2) {
+
+                    <!-- Settings -->
+                    <li class="block">
+                      <a routerLink="/settings"
+                         routerLinkActive="!cursor-default !text-gray-400 dark:!text-gray-400"
+                         [routerLinkActiveOptions]="{ exact: true }" 
+                         [ngClass]="{ 'pointer-events-none': isActive('settings') }"
+                         class="block px-4 py-2
+                                hover:bg-gray-100 dark:hover:bg-gray-800">
+                        <div class="flex items-center">
+                          <fa-icon [icon]="icon.faGear" 
+                                  class="fa-lg me-1"></fa-icon>
+                          <span class="capitalize text-small-caps">
+                            {{ lang.data['settings'] || 'settings' }}
+                          </span>
+                        </div>
+                      </a>
+                    </li>
+                  }
+
+                  <!-- Contracts -->
+                  @if (user()!.type === 'U') {
+
+                    <!-- Contracts -->
+                    <li class="block">
+                      <a routerLink="/contracts"
+                        routerLinkActive="!cursor-default !text-gray-400 dark:!text-gray-400"
+                        [routerLinkActiveOptions]="{ exact: true }" 
+                        [ngClass]="{ 'pointer-events-none': isActive('contracts') }"
+                        class="block px-4 py-2
+                                hover:bg-gray-100 dark:hover:bg-gray-800">
+                        <div class="flex items-center">
+                          <fa-icon [icon]="icon.faHandshake" 
+                                  class="fa-lg me-1"></fa-icon>
+                          <span class="capitalize text-small-caps">
+                            {{ lang.data['contracts'] || 'contracts' }}
+                          </span>
+                        </div>
+                      </a>
+                    </li>
+                  }
+
+                  <!-- Logout -->
+                  <li class="block">
+                    <button type="button"
+                            class="w-full text-start block px-4 py-2 cursor-pointer
+                                   hover:bg-gray-100 dark:hover:bg-gray-800"
+                            (click)="confirm()">
+                      <div class="flex items-center">
+                        <fa-icon [icon]="icon.faRightFromBracket" 
+                                class="fa-lg me-1"></fa-icon>
+                        <span class="capitalize text-small-caps">
+                          {{ lang.data['logout'] || 'logout' }}
+                        </span>
+                      </div>
+                    </button>
+                  </li>
+
+                } @else {
+
+                  <!-- Login -->
+                  <li class="block">
+                    <a routerLink="/login"
+                      routerLinkActive="!cursor-default !text-gray-400 dark:!text-gray-400"
+                      [routerLinkActiveOptions]="{ exact: true }"
+                      [ngClass]="{ 'pointer-events-none': isActive('login') }"
+                      class="block px-4 py-2
+                              hover:bg-gray-100 dark:hover:bg-gray-800"
+                      role="menuitem">
+                      <div class="flex items-center">
+                        <fa-icon [icon]="icon.faRightToBracket" 
+                                class="fa-lg me-1"></fa-icon>
+                        <span class="capitalize text-small-caps">
+                          {{ lang.data['login'] || 'login' }}
+                        </span>
+                      </div>
+                    </a>
+                  </li>
+
+                  <!-- Register -->
+                  <li class="block">
+                    <a routerLink="/register"
+                      routerLinkActive="!cursor-default !text-gray-400 dark:!text-gray-400"
+                      [routerLinkActiveOptions]="{ exact: true }"
+                      [ngClass]="{ 'pointer-events-none': isActive('register') }" 
+                      class="block px-4 py-2
+                              hover:bg-gray-100 dark:hover:bg-gray-800">
+                      <div class="flex items-center">
+                        <fa-icon [icon]="icon.faUserPlus" 
+                                class="fa-lg me-1"></fa-icon>
+                        <span class="capitalize text-small-caps">
+                          {{ lang.data['registration'] || 'registration' }}
+                        </span>
+                      </div>
+                    </a>
+                  </li>
+                }
+              </ul>
+            </li>
+          </ul>
+        </li>
+
+        <!-- Language -->
+        <li #langRoot
+            class="p-1 rounded relative
+                   hover:bg-gray-200 dark:hover:bg-gray-700" 
+            [hidden]="!isMultipleLangs">
+
+          <!-- Language button -->
+          <button type="button" 
+                  class="flex cursor-pointer"
+                  (click)="toggle('lang', $event)">
+            <div class="flex items-center py-1">
+              @if (lang.available[lang.index]?.img) {
+                <img [src]="'assets/i18n/img/' + lang.available[lang.index]?.img"
+                     class="inline h-6 me-1" 
+                     [alt]="lang.available[lang.index]?.local ?? ''" />
+              }
+              <span class="hidden sm:block">
+                <span class="capitalize text-small-caps">
+                  {{ lang.available[lang.index]?.local }}
+                </span>
+                <span class="ms-1 inline-block transition-transform"
+                      [class.rotate-180]="isOpen('lang')">
+                  <fa-icon [icon]="icon.faAngleDown" 
+                          class="fa-sm"></fa-icon>
+                </span>
+              </span>
+            </div>
+          </button>
+
+          <!-- Language dropdown -->
+          <ul class="absolute z-10 w-max !end-0 !top-14
+                     py-2 whitespace-nowrap
+                     text-base list-none
+                     divide-gray-100 shadow-sm dark:divide-gray-600
+                     bg-gray-200 dark:bg-gray-700
+                     border rounded-lg 
+                     border-gray-300 dark:border-gray-500"
+              [class.hidden]="!isOpen('lang')">
+
+            <!-- Language dropdown items -->
+            @for (x of lang.available; track x?.name) {
+              <li [hidden]="lang.id === x?.id || !x?.valid"
+                  class="cursor-pointer">
+                <a (click)="changeLanguage(x.id)"
+                  class="block px-4 py-2
+                         hover:bg-gray-100 dark:hover:bg-gray-800">
+                  <div class="flex items-center">
+                    @if (x?.img) {
+                      <img [src]="'assets/i18n/img/' + x?.img" 
+                           class="inline h-6 me-1"
+                           [alt]="x?.local ?? ''">
+                    }
+                    <span class="capitalize">{{ x?.name }}</span>
+                    <span [hidden]="x?.name === x?.local" 
+                          class="ms-1">
+                      ({{ x?.local }})
+                    </span>
+                  </div>
+                </a>
+              </li>
+            }
+          </ul>
+        </li>
+
+        <!-- Light/Dark view -->
+        <li class="p-1 rounded hidden sm:list-item
+                   hover:bg-gray-200 dark:hover:bg-gray-700">
+          <button type="button" 
+                  class="flex cursor-pointer p-1"
+                  (click)="toggleTheme()">
+            <div class="flex items-center justify-center h-6">
+              <fa-icon [icon]="icon.faMoon" 
+                       class="fa-lg block dark:hidden
+                              text-yellow-600 dark:text-yellow-200"></fa-icon>
+              <fa-icon [icon]="icon.faSun" 
+                       class="fa-lg hidden dark:block
+                              text-yellow-600 dark:text-yellow-200"></fa-icon>
+            </div>
+          </button>
+        </li>
+      </ul>
+      
+      <!-- Hamburger icon -->
+      <button #navbarRoot
+              type="button"
+              (click)="toggle('navbar', $event)" 
+              class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm
+                     text-gray-500 rounded-lg xl:hidden hover:bg-gray-100
+                     focus:outline-none focus:ring-2 focus:ring-gray-200
+                     dark:text-gray-400 dark:hover:bg-gray-700 
+                     dark:focus:ring-gray-600 cursor-pointer">
+        <svg class="w-5 h-5" aria-hidden="true" 
+             xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 17 14">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                stroke-width="2" d="M1 1h15M1 7h15M1 13h15"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Navbar CENTER -->
+    <div id="app-navbar"
+         class="absolute items-center
+                top-15 left-[-8px] xl:left-0 xl:static 
+                w-max min-w-3xs xl:flex xl:w-auto xl:order-1"
+         [class.hidden]="!isOpen('navbar')">
+
+      <!-- Navbar -->
+      <ul class="flex flex-col font-medium xl:p-0 list-none
+                 xl:space-x-8 rtl:space-x-reverse xl:flex-row xl:mt-0
+                 xl:border-0 xl:items-center
+                 bg-gray-200 dark:bg-gray-700 
+                 xl:bg-gray-100 xl:dark:bg-gray-800
+                 border rounded-lg 
+                 border-gray-300 dark:border-gray-500">
+
+        <!-- Home -->
+        <li class="mx-0 rounded-lg
+                   hover:bg-gray-100 dark:hover:bg-gray-800
+                   xl:hover:bg-gray-200 xl:dark:hover:bg-gray-700">
+          <a routerLink="/"
+             routerLinkActive="!cursor-default !text-gray-400 dark:!text-gray-400"
+             [routerLinkActiveOptions]="{ exact: true }"
+             [ngClass]="{ 'pointer-events-none': isActive('/'),                          
+                          'border-b-2 !border-green-600 !dark:border-green-400': 
+                           isActive('/') && !isOpen('navbar') }"
+             class="block p-2">
+            <div class="flex items-center">
+              <fa-icon [icon]="icon.faHouse" 
+                       class="fa-lg me-1 xl:hidden 2xl:block"></fa-icon>
+              <span class="truncate capitalize-first text-small-caps">
+                {{ lang.data['home_page'] || 'home page' }}
+              </span>
+            </div>
+          </a>
+        </li>
+
+        <!-- Services -->
+        <li #servicesRoot
+            class="mx-0 rounded relative
+                   hover:bg-gray-100 dark:hover:bg-gray-800
+                   xl:hover:bg-gray-200 xl:dark:hover:bg-gray-700">
+
+          <!-- Services button -->
+          <button type="button" 
+                  class="flex cursor-pointer p-2 w-full" 
+                  (click)="toggle('services', $event, true)">
+            <div class="flex items-center">
+              <fa-icon [icon]="icon.faBellConcierge" 
+                       class="fa-lg me-1 xl:hidden 2xl:block"></fa-icon>
+              <span class="capitalize text-small-caps">
+                {{ lang.data['services'] || 'services' }}
+              </span>
+              <fa-icon [icon]="icon.faAngleDown" 
+                       class="fa-sm ms-1 inline-block transition-transform"
+                       [ngClass]="{'rotate-180': isOpen('services')}"></fa-icon>
+            </div>
+          </button>
+
+          <!-- Services dropdown -->
+          <div class="absolute z-10 w-max 
+                      !start-2 xl:!start-0 
+                      !top-11 xl:!top-14
+                      grid grid-cols-1 xl:grid-cols-2
+                      py-2 whitespace-nowrap
+                      text-base list-none
+                      divide-gray-100 shadow-sm dark:divide-gray-600
+                      bg-gray-200 dark:bg-gray-700
+                      border rounded-lg 
+                      border-gray-300 dark:border-gray-500"
+               [class.hidden]="!isOpen('services')">
+
+            <!-- Services group 1 -->
+            <ul>
+            
+              <!-- Pension insurance, retirement savings -->
+              <li class="block p-2
+                         hover:bg-gray-100 dark:hover:bg-gray-800">
+                <a routerLink="/pension"
+                   routerLinkActive="!cursor-default !text-gray-400 dark:!text-gray-400"
+                   [routerLinkActiveOptions]="{ exact: true }"
+                   [ngClass]="{ 'pointer-events-none': isActive('pension') }">
+                  <div class="flex items-center">
+                    <fa-icon [icon]="icon.faPersonCane" 
+                             class="fa-lg me-1"></fa-icon>
+                    <span class="truncate capitalize-first">
+                      {{ lang.data['pension_insurance'] || 'pension insurance' }}
+                    </span>
+                    <span class="truncate me-1">,</span>
+                    <span class="truncate">
+                      {{ lang.data['retirement_savings'] || 'retirement savings' }}
+                    </span>
+                  </div>
+                </a>
+              </li>
+
+              <!-- Family protection and risk life insurance -->
+              <li class="block p-2
+                         hover:bg-gray-100 dark:hover:bg-gray-800">
+                <a routerLink="/family"
+                   routerLinkActive="!cursor-default !text-gray-400 dark:!text-gray-400"
+                   [routerLinkActiveOptions]="{ exact: true }"
+                   [ngClass]="{ 'pointer-events-none': isActive('family') }">
+                  <div class="flex items-center">
+                    <fa-icon [icon]="icon.faHandsHoldingChild" 
+                             class="fa-lg me-1"></fa-icon>
+                    <span class="truncate capitalize-first">
+                      {{ lang.data['family_protection'] || 'family protection' }}
+                    </span>
+                    <span class="truncate mx-1">
+                      {{ lang.data['and'] || 'and' }}
+                    </span>
+                    <span class="truncate">
+                      {{ lang.data['risk_life_insurance'] || 'risk life insurance' }}
+                    </span>
+                  </div>
+                </a>
+              </li>
+
+              <!-- Savings and capital raising -->
+              <li class="block p-2
+                         hover:bg-gray-100 dark:hover:bg-gray-800">
+                <a routerLink="/savings"
+                    routerLinkActive="!cursor-default !text-gray-400 dark:!text-gray-400"
+                    [routerLinkActiveOptions]="{ exact: true }"
+                    [ngClass]="{ 'pointer-events-none': isActive('savings') }">
+                  <div class="flex items-center">
+                    <fa-icon [icon]="icon.faPiggyBank" 
+                             class="fa-lg me-1"></fa-icon>
+                    <span class="truncate capitalize-first">
+                      {{ lang.data['savings'] || 'savings' }}
+                    </span>
+                    <span class="truncate mx-1">
+                      {{ lang.data['and'] || 'and' }}
+                    </span>
+                    <span class="truncate">
+                      {{ lang.data['capital_raising'] || 'capital raising' }}
+                    </span>
+                  </div>
+                </a>
+              </li>
+
+              <!-- Health and accident insurance -->
+              <li class="block p-2
+                         hover:bg-gray-100 dark:hover:bg-gray-800">
+                <a routerLink="/health"
+                    routerLinkActive="!cursor-default !text-gray-400 dark:!text-gray-400"
+                    [routerLinkActiveOptions]="{ exact: true }"
+                    [ngClass]="{ 'pointer-events-none': isActive('health') }">
+                  <div class="flex items-center">
+                    <fa-icon [icon]="icon.faSuitcaseMedical" 
+                             class="fa-lg me-1"></fa-icon>
+                    <span class="truncate capitalize-first">
+                      {{ lang.data['health'] || 'health' }}
+                    </span>
+                    <span class="truncate mx-1">
+                      {{ lang.data['and'] || 'and' }}
+                    </span>
+                    <span class="truncate">
+                      {{ lang.data['accident_insurance'] || 'accident insurance' }}
+                    </span>
+                  </div>
+                </a>
+              </li>
+
+              <!-- Home insurance and car insurance -->
+              <li class="block p-2
+                         hover:bg-gray-100 dark:hover:bg-gray-800">
+                <a routerLink="/home-ins"
+                    routerLinkActive="!cursor-default !text-gray-400 dark:!text-gray-400"
+                    [routerLinkActiveOptions]="{ exact: true }"
+                    [ngClass]="{ 'pointer-events-none': isActive('home-ins') }">
+                  <div class="flex items-center">
+                    <fa-icon [icon]="icon.faCarBurst" 
+                             class="fa-lg me-1"></fa-icon>
+                    <span class="truncate capitalize-first">
+                      {{ lang.data['home_insurance'] || 'home insurance' }}
+                    </span>
+                    <span class="truncate mx-1">
+                      {{ lang.data['and'] || 'and' }}
+                    </span>
+                    <span class="truncate">
+                      {{ lang.data['car_insurance'] || 'car insurance' }}
+                    </span>
+                  </div>
+                </a>
+              </li>
+            </ul>
+
+            <!-- Services group 2-->
+            <ul>
+
+              <!-- Corporate property and liability insurance -->
+              <li class="block p-2
+                         hover:bg-gray-100 dark:hover:bg-gray-800">
+                <a routerLink="/corporate"
+                   routerLinkActive="!cursor-default !text-gray-400 dark:!text-gray-400"
+                   [routerLinkActiveOptions]="{ exact: true }"
+                   [ngClass]="{ 'pointer-events-none': isActive('corporate') }">
+                  <div class="flex items-center">
+                    <fa-icon [icon]="icon.faHouseCrack" 
+                             class="fa-lg me-1"></fa-icon>
+                    <span class="truncate capitalize-first">
+                      {{ lang.data['corporate_property'] || 'corporate property' }}
+                    </span>
+                    <span class="truncate mx-1">
+                      {{ lang.data['and'] || 'and' }}
+                    </span>
+                    <span class="truncate">
+                      {{ lang.data['liability_insurance'] || 'liability insurance' }}
+                    </span>
+                  </div>
+                </a>
+              </li>
+
+              <!-- Mortgage loan, CSOK, Baby loan -->
+              <li class="block p-2
+                         hover:bg-gray-100 dark:hover:bg-gray-800">
+                <a routerLink="/mortgage"
+                   routerLinkActive="!cursor-default !text-gray-400 dark:!text-gray-400"
+                   [routerLinkActiveOptions]="{ exact: true }"
+                   [ngClass]="{ 'pointer-events-none': isActive('mortgage') }">
+                  <div class="flex items-center">
+                    <fa-icon [icon]="icon.faBabyCarriage" 
+                             class="fa-lg me-1"></fa-icon>
+                    <span class="truncate capitalize-first">
+                      {{ lang.data['mortgage_loan'] || 'mortgage loan' }}
+                    </span>
+                    <span class="me-1">, CSOK,</span>
+                    <span class="truncate capitalize-first">
+                      {{ lang.data['baby_loan'] || 'baby loan' }}
+                    </span>
+                  </div>
+                </a>
+              </li>
+
+              <!-- Personal loan and bank account -->
+              <li class="block p-2
+                         hover:bg-gray-100 dark:hover:bg-gray-800">
+                <a routerLink="/personal"
+                   routerLinkActive="!cursor-default !text-gray-400 dark:!text-gray-400"
+                   [routerLinkActiveOptions]="{ exact: true }"
+                   [ngClass]="{ 'pointer-events-none': isActive('personal') }">
+                  <div class="flex items-center">
+                    <fa-icon [icon]="icon.faMoneyCheckDollar" 
+                             class="fa-lg me-1"></fa-icon>
+                    <span class="truncate capitalize-first">
+                      {{ lang.data['personal_loan'] || 'personal loan' }}
+                    </span>
+                    <span class="truncate mx-1">
+                      {{ lang.data['and'] || 'and' }}
+                    </span>
+                    <span class="truncate">
+                      {{ lang.data['bank_account'] || 'bank account' }}
+                    </span>
+                  </div>
+                </a>
+              </li>
+
+              <!-- Health fund and pension fund -->
+              <li class="block p-2
+                         hover:bg-gray-100 dark:hover:bg-gray-800">
+                <a routerLink="/funds"
+                   routerLinkActive="!cursor-default !text-gray-400 dark:!text-gray-400"
+                   [routerLinkActiveOptions]="{ exact: true }"
+                   [ngClass]="{ 'pointer-events-none': isActive('funds') }">
+                  <div class="flex items-center">
+                    <fa-icon [icon]="icon.faHeartPulse" 
+                             class="fa-lg me-1"></fa-icon>
+                    <span class="truncate capitalize-first">
+                      {{ lang.data['health_fund'] || 'health fund' }}
+                    </span>
+                    <span class="truncate mx-1">
+                      {{ lang.data['and'] || 'and' }}
+                    </span>
+                    <span class="truncate">
+                      {{ lang.data['pension_fund'] || 'pension fund' }}
+                    </span>
+                  </div>
+                </a>
+              </li>
+
+              <!-- Securities account and investment fund -->
+              <li class="block p-2
+                         hover:bg-gray-100 dark:hover:bg-gray-800">
+                <a routerLink="/securities"
+                   routerLinkActive="!cursor-default !text-gray-400 dark:!text-gray-400"
+                   [routerLinkActiveOptions]="{ exact: true }"
+                   [ngClass]="{ 'pointer-events-none': isActive('securities') }">
+                  <div class="flex items-center">
+                    <fa-icon [icon]="icon.faSackDollar" 
+                             class="fa-lg me-1"></fa-icon>
+                    <span class="truncate capitalize-first">
+                      {{ lang.data['securities_account'] || 'securities account' }}
+                    </span>
+                    <span class="truncate mx-1">
+                      {{ lang.data['and'] || 'and' }}
+                    </span>
+                    <span class="truncate">
+                      {{ lang.data['investment_fund'] || 'investment fund' }}
+                    </span>
+                  </div>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </li>
+
+        <!-- Colleagues -->
+        <li class="mx-0 rounded-lg 
+                   hover:bg-gray-100 dark:hover:bg-gray-800
+                   xl:hover:bg-gray-200 xl:dark:hover:bg-gray-700">
+          <a routerLink="/colleagues"
+             routerLinkActive="!cursor-default !text-gray-400 dark:!text-gray-400"
+             [routerLinkActiveOptions]="{ exact: true }"
+             [ngClass]="{ 'pointer-events-none': isActive('/colleagues'),                          
+                          'border-b-2 !border-green-600 !dark:border-green-400': 
+                           isActive('/colleagues') && !isOpen('navbar') }"
+             class="block p-2">
+            <div class="flex items-center">
+              <fa-icon [icon]="icon.faUsersGear" 
+                       class="fa-lg me-1 xl:hidden 2xl:block"></fa-icon>
+              <span class="capitalize text-small-caps">
+                {{ lang.data['colleagues'] || 'colleagues' }}
+              </span>
+            </div>
+          </a>
+        </li>
+
+        <!-- Gallery -->
+        <li class="mx-0 rounded-lg 
+                   hover:bg-gray-100 dark:hover:bg-gray-800
+                   xl:hover:bg-gray-200 xl:dark:hover:bg-gray-700">
+          <a routerLink="/gallery"
+             routerLinkActive="!cursor-default !text-gray-400 dark:!text-gray-400"
+             [routerLinkActiveOptions]="{ exact: true }"
+             [ngClass]="{ 'pointer-events-none': isActive('/gallery'),                          
+                          'border-b-2 !border-green-600 !dark:border-green-400': 
+                           isActive('/gallery') && !isOpen('navbar') }"
+             class="block p-2">
+            <div class="flex items-center">
+              <fa-icon [icon]="icon.faImages" 
+                       class="fa-lg me-1 xl:hidden 2xl:block"></fa-icon>
+              <span class="capitalize text-small-caps">
+                {{ lang.data['gallery'] || 'gallery' }}
+              </span>
+            </div>
+          </a>
+        </li>
+
+        <!-- Contact -->
+        <li class="mx-0 rounded-lg 
+                   hover:bg-gray-100 dark:hover:bg-gray-800
+                   xl:hover:bg-gray-200 xl:dark:hover:bg-gray-700">
+          <a routerLink="/contact"
+             routerLinkActive="!cursor-default !text-gray-400 dark:!text-gray-400"
+             [routerLinkActiveOptions]="{ exact: true }"
+             [ngClass]="{ 'pointer-events-none': isActive('/contact'),                          
+                          'border-b-2 !border-green-600 !dark:border-green-400': 
+                           isActive('/contact') && !isOpen('navbar') }"
+             class="block p-2">
+            <div class="flex items-center">
+              <fa-icon [icon]="icon.faFileSignature" 
+                       class="fa-lg me-1 xl:hidden 2xl:block"></fa-icon>
+              <span class="capitalize text-small-caps">
+                {{ lang.data['contact'] || 'contact' }}
+              </span>
+            </div>
+          </a>
+        </li>
+        
+        <!-- About -->
+        <!-- <li class="mx-0 rounded-lg 
+                   hover:bg-gray-100 dark:hover:bg-gray-800
+                   xl:hover:bg-gray-200 xl:dark:hover:bg-gray-700">
+          <a routerLink="/about"
+             routerLinkActive="!cursor-default !text-gray-400 dark:!text-gray-400"
+             [routerLinkActiveOptions]="{ exact: true }"
+             [ngClass]="{ 'pointer-events-none': isActive('/about'),                          
+                          'border-b-2 !border-green-600 !dark:border-green-400': 
+                           isActive('/about') && !isOpen('navbar') }"
+             class="block p-2">
+            <div class="flex items-center">
+              <fa-icon [icon]="icon.faCircleInfo" 
+                       class="fa-lg me-1 xl:hidden 2xl:block"></fa-icon>
+              <span class="truncate capitalize-first text-small-caps">
+                {{ lang.data['about_us'] || 'about us' }}
+              </span>
+            </div>
+          </a>
+        </li> -->
+
+        <!-- Light/Dark view -->
+        <li class="mx-0 rounded-lg list-item sm:hidden w-full
+                   hover:bg-gray-100 dark:hover:bg-gray-800">
+          <button type="button" 
+                  class="flex cursor-pointer p-2 w-full"
+                  (click)="toggleTheme()">
+            <div class="flex items-center justify-center h-6">
+              <fa-icon [icon]="icon.faMoon" 
+                       class="fa-lg block dark:hidden me-1
+                              text-yellow-600 dark:text-yellow-200"></fa-icon>
+              <fa-icon [icon]="icon.faSun" 
+                       class="fa-lg hidden dark:block me-1
+                              text-yellow-600 dark:text-yellow-200"></fa-icon>
+              <span class="truncate capitalize-first text-small-caps">
+                {{ lang.data['appearance'] || 'appearance' }}
+              </span>
+            </div>
+          </button>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>

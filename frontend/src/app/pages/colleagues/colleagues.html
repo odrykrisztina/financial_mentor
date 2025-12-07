@@ -1,0 +1,175 @@
+<div class="min-h-full w-full flex flex-col justify-center">
+  <div class="min-h-full w-full flex flex-col justify-center p-5">
+    <div class="w-full max-w-6xl mx-auto p-5">
+      @if (!loading() && !error()) {
+        <div class="flex flex-col sm:flex-row mt-5 pb-5
+                    justify-center items-center w-full">
+          <fa-icon [icon]="icon.faUsersGear"
+                  class="fa-2xl me-0 sm:me-3 
+                         text-blue-600 dark:text-blue-400"></fa-icon>
+          <div class="text-md sm:text-lg md:text-xl lg:text-2xl sm:mt-0
+                      font-semibold tracking-wide truncate capitalize-first">
+            {{ lang.data['colleagues'] || 'colleagues' }}
+          </div>
+        </div>
+
+        @if (groups().length === 0) {
+          <div class="text-center py-5 text-gray-600 dark:text-gray-300">
+            {{ lang.data['colleagues_not_found'] || 'colleagues not found' }}!
+          </div>
+        } @else {
+          @for (group of groups(); track group.key) {
+            <section class="pt-5 flex justify-center">
+              <div class="w-full max-w-6xl">
+                <div class="flex flex-wrap justify-center gap-6 max-w-8xl mx-auto">
+                  @for (c of group.items; track c.worker_id) {
+                    <article class="max-w-sm w-full sm:w-64 
+                                    bg-white border border-gray-200
+                                    rounded-lg shadow-2xl
+                                    shadow-gray-800 dark:shadow-gray-200
+                                    dark:bg-gray-800 dark:border-gray-700 
+                                    flex flex-col items-center px-2 pt-4 pb-2">
+                      <div class="w-50 h-50 cursor-pointer
+                                  rounded-full bg-top bg-cover mb-4"
+                           [style.background-image]="'url(' + 
+                           (c.img || getDefaultAvatar(c.gender)) + ')'"
+                           (click)="openDetails(c)">
+                      </div>
+                      <h2 class="text-lg font-semibold text-center mb-1">
+                        {{ getDisplayName(c) }}
+                      </h2>
+                      @if (c.rank_name_id) {
+                        <p class="text-sm text-gray-500 text-center mb-2">
+                          {{ lang.data[c.rank_name_id] || c.rank_name_id }}
+                        </p>
+                      }
+                      <button class="w-full p-2 mt-3 text-sm rounded-md 
+                                     text-gray-900 dark:text-white
+                                     bg-gray-300 dark:bg-gray-700
+                                     border-gray-300 dark:border-gray-600
+                                     hover:bg-gray-200 dark:hover:bg-gray-600 
+                                     disabled:opacity-50
+                                     cursor-pointer disabled:cursor-auto shadow"
+                        [class.invisible]="isEnablePersonalCounseling(c)"
+                        (click)="applyForPersonalCounseling(c)">
+                        {{ lang.data['apply_for_personal_counseling'] || 
+                            'I am applying for personal counseling' }}
+                      </button>
+                    </article>
+                  }
+                </div>
+              </div>
+            </section>
+          }
+        }
+      }
+    </div>
+  </div>
+
+  <!-- Modal -->
+  @if (selected(); as sel) {
+    <div class="fixed inset-0 z-50 flex items-center 
+                justify-center bg-black/60 dark:bg-gray-500/60">
+      <div class="bg-gray-100 dark:bg-gray-900 
+                  rounded-2xl shadow-2xl
+                  w-md max-w-md  flex flex-col
+                  origin-center duration-300 ease-out"
+                  style="transform: scale(0);"
+                  [style.transform]="mounted() ? 'scale(1)' : 'scale(0)'">
+        <div class="modal-header border-b rounded-t-2xl
+                    border-gray-700 px-4 sm:px-6 py-2
+                    bg-gray-900/80 text-gray-100 text-sm">
+          <div class="flex items-center justify-end">
+            <button type="button"
+                    class="cursor-pointer
+                           hover:bg-gray-700
+                           rounded-full p-1 bg-black/30"
+                    (click)="closeDetails()">
+              <fa-icon [icon]="icon.faXmark"></fa-icon>
+            </button>
+          </div>
+        </div>
+        <div class="modal-body text-center">
+          <div class="flex-1 overflow-auto">
+            @if (idCardSafeUrl()) {
+              <iframe class="w-full h-[85vh]  bg-white"
+                      [src]="idCardSafeUrl()"
+                      loading="lazy"
+                      [class.h-[70vh]]="showWorkerProperties()"
+                      [class.h-[85vh]]="!showWorkerProperties()">
+              </iframe>
+            } @else {
+              <p class="text-center text-sm text-gray-500">
+                {{ lang.data['no_id_card'] || 'Nincs megjeleníthető igazolvány.' }}
+              </p>
+            }
+          </div>
+        </div>
+        <div class="modal-footer border-t rounded-b-2xl text-sm
+                    border-gray-700 px-4 sm:px-6 pb-3
+                    bg-gray-900/80 text-gray-100">
+          @if (showWorkerProperties()) {
+            <h3 class="font-semibold text-base mb-2 pt-2 text-center">
+              {{ getDisplayName(sel) }}
+            </h3>
+            <div class="text-sm space-y-1 text-gray-300">
+              @if (sel.email) { 
+                <div class="flex items-center justify-center">
+                  <div class="me-2 flex items-center">
+                    <fa-icon [icon]="icon.faEnvelope" class="me-1"></fa-icon>
+                    <span class="truncate capitalize-first">
+                      {{ lang.data['email'] || 'email' }}:
+                    </span>
+                  </div>
+                  <a class="underline hover:text-lime-300"
+                    [href]="'mailto:' + sel.email">
+                    <span>{{ sel.email }}</span>
+                  </a>
+                </div> 
+              }
+              @if (sel.phone) { 
+                <div class="flex items-center justify-center">
+                  <div class="me-2 flex items-center">
+                    <fa-icon [icon]="icon.faMobileScreenButton" class="me-1"></fa-icon>
+                    <span class="truncate capitalize-first">
+                      {{ lang.data['phone'] || 'phone' }}:
+                    </span>
+                  </div>
+                  <a class="underline hover:text-lime-300"
+                    [href]="'tel:' + sel.phone">
+                  {{ sel.phone }}
+                  </a>
+                </div> 
+              }
+              @if (sel.residence) {
+                <div class="flex items-center justify-center">
+                  <div class="me-2 flex items-center">
+                    <fa-icon [icon]="icon.faCity" class="me-1"></fa-icon>
+                    <span class="truncate capitalize-first">
+                      {{ lang.data['residence'] || 'residence' }}:
+                    </span>
+                  </div> 
+                  <div>
+                    {{ sel.residence }}
+                  </div>
+                </div>
+              }
+            </div>
+          }
+          <button class="w-full p-2 mt-3 text-sm rounded-md 
+                         text-gray-900 dark:text-white
+                         bg-gray-300 dark:bg-gray-700
+                         border-gray-300 dark:border-gray-600
+                         hover:bg-gray-200 dark:hover:bg-gray-600 
+                         disabled:opacity-50 
+                         cursor-pointer disabled:cursor-auto shadow"
+            [class.invisible]="isEnablePersonalCounseling(sel)"
+            (click)="applyForPersonalCounseling(sel)">
+            {{ lang.data['apply_for_personal_counseling'] || 
+                'I am applying for personal counseling' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

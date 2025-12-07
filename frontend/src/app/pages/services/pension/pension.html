@@ -1,0 +1,89 @@
+<div class="min-h-full w-full flex flex-col justify-center py-6">
+  
+  <!-- Title -->
+  <div class="flex flex-col sm:flex-row justify-center items-center w-full">
+    <fa-icon [icon]="icon.faPersonCane"
+              class="fa-2xl me-0 sm:me-3"></fa-icon>
+    <div class="text-lg sm:text-xl md:text-2xl lg:text-3xl mt-5 sm:mt-0
+                font-semibold text-small-caps truncate capitalize-first">
+      <span>
+        {{ lang.data['pension_insurance'] || 'pension insurance' }}
+      </span>
+      <span class="truncate me-1">,</span>
+      <span class="truncate">
+        {{ lang.data['retirement_savings'] || 'retirement savings' }}
+      </span>
+    </div>
+  </div>
+
+  <!-- Card -->
+  <div class="w-full mt-10 px-4">
+    <div class="mx-auto max-w-5xl">
+      <div class="relative overflow-hidden rounded-2xl border 
+                  border-slate-200 bg-white/90 shadow-sm
+                  dark:border-slate-700 dark:bg-slate-900/90">
+
+        <!-- Header -->
+        <div class="border-b border-slate-100 bg-slate-50 px-6 py-4
+                    dark:border-slate-700 dark:bg-slate-800/80">
+          <div>
+            <p class="text-sm sm:text-base font-semibold tracking-[0.18em] 
+                      text-slate-600 uppercase dark:text-slate-300">
+              {{ lang.data['pension_card_header'] || 
+                          'Nyugdíjmegtakarítás & nyugdíjbiztosítás' }}
+            </p>
+          </div>
+          <button class="py-2 px-5 mt-3 text-md rounded-md text-white
+                         bg-green-700 hover:bg-green-800 
+                         cursor-pointer disabled:cursor-auto shadow 
+                         truncate capitalize-first"
+            (click)="applyForContact()">
+            <div class="flex items-center justify-center">
+              <fa-icon [icon]="icon.faFileSignature" 
+                        class="fa-lg me-2"></fa-icon>
+              <span class="truncate capitalize-first inline-block">
+                {{ lang.data['i_am_interested'] || 'i_am_interested' }}
+              </span>
+            </div>
+          </button>
+        </div>
+
+        <!-- Body -->
+        <div class="space-y-4 px-6 py-6 text-sm leading-relaxed 
+                    text-slate-700 sm:text-base dark:text-slate-200">
+          <p>
+            {{ lang.data['pension_intro'] }}
+          </p>
+          <h2 class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">
+            {{ lang.data['pension_features_title'] || 'Fő jellemzőik:' }}
+          </h2>
+          <ul class="list-disc list-inside space-y-2">
+            <li>
+              {{ lang.data['pension_feature_1'] }}
+            </li>
+            <li>
+              {{ lang.data['pension_feature_2'] }}
+            </li>
+            <li>
+              {{ lang.data['pension_feature_3'] }}
+            </li>
+            <li>
+              {{ lang.data['pension_feature_4'] }}
+            </li>
+          </ul>
+          <p>
+            {{ lang.data['pension_conclusion'] }}
+          </p>
+        </div>
+
+        <!-- Footer-->
+        <div class="border-t border-dashed border-slate-200 px-6 py-4
+                    bg-slate-50/60 dark:border-slate-700 dark:bg-slate-800/60">
+          <p class="text-sm leading-relaxed text-slate-700 dark:text-slate-200">
+            {{ lang.data['pension_footer'] }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

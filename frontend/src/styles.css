@@ -1,0 +1,59 @@
+@import "tailwindcss";
+@import "./styles/form-common.css";
+@plugin "flowbite/plugin";
+@custom-variant dark (&:where(.dark, .dark *)); 
+
+html.dark .bg-waves {
+  background-image: url("assets/media/image/wallpapers/bg-waves.png");
+}
+:root { color-scheme: light dark; }
+.dark body { 
+  background-color: rgb(17 24 39); 
+  color: rgb(243 244 246);
+}
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+*:not(input):not(textarea),
+input:disabled,
+textarea:disabled {
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
+}
+.text-small-caps {
+  font-variant: small-caps;
+}
+.capitalize-first::first-letter {
+  text-transform: uppercase;
+}
+
+/* Custom scrollbar */
+* {
+  scrollbar-width: thin;                   
+  scrollbar-color: #64748b transparent;
+}
+.dark * {
+  scrollbar-color: #9ca3af transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background-color: #64748b;
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+.dark *::-webkit-scrollbar-thumb {
+  background-color: #9ca3af;
+}
+.dark *::-webkit-scrollbar-track {
+  background-color: rgba(15, 23, 42, 0.6);
+}

@@ -1,0 +1,81 @@
+<div class="w-full flex flex-col pb-16">
+
+  <!-- Quote and image -->
+  <section class="w-full min-h-screen flex flex-col justify-start md:justify-center">
+    <div class="flex flex-1 items-center pb-40 md:pb-0">
+      <div
+        class="w-full max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8
+               px-4 sm:px-6 lg:px-10 2xl:px-20 mt-16 md:mt-0">
+        <div class="px-2 pb-20 sm-pt-0 sm:px-4 flex justify-center items-center">
+          <div
+            class="w-full text-center italic
+                   text-lg/8 sm:text-xl/10 md:text-2xl/12 
+                   lg:text-3xl/14 xl:text-3xl/16">
+            {{ lang.data['home_zitat'] }}.
+          </div>
+        </div>
+        <div class="px-2 sm:px-4 flex justify-center items-center">
+          <img
+            class="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg rounded-lg"
+            alt="Logo"
+            src="assets/media/image/pages/odry_tamas.jpg" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Title, video and main guidelines -->
+  <section class="w-full px-4 sm:px-6 lg:px-20 flex justify-center">
+    <div class="w-full max-w-7xl mt-4 md:mt-6">
+
+      <!-- Title -->
+      <div class="w-full mb-15 px-4 sm:px-6 lg:px-20 flex justify-center">
+        <h2 class="max-w-5xl text-center text-md sm:text-lg
+                   md:text-xl lg:text-2xl xl:text-3xl 
+                   font-semibold italic
+                   text-slate-600 dark:text-slate-100">
+          {{ lang.data['home_hero_title'] ||
+          'Személyes figyelem, szakmai háttér - az egész országban' }}
+        </h2>
+      </div>
+
+      <!-- Video and main guidelines -->
+      <div class="grid grid-cols-1 xl:grid-cols-2 gap-3 items-stretch">
+
+        <!-- Video -->
+        <div class="flex items-center px-2 sm:p-x-4 md:mx-6 lg:px-8 xl:px-0">
+          <video
+            #introVideo
+            class="w-full aspect-video rounded-2xl shadow-lg 
+                   border border-slate-700/40 object-cover"
+            src="assets/media/video/odry_tamas_2800_short_01.mp4"
+            muted
+            playsinline
+            controls
+            preload="auto">
+          </video>
+        </div>
+
+        <!-- Main guidelines -->
+        <div class="h-full rounded-2xl px-2 sm:px-4 md:mx-6 lg:px-8 xl:px-0 py-6 sm:py-7">
+          <div class="space-y-2 text-sm sm:text-base md:text-lg">
+            @for (item of guidelines; track item) {
+              <div class="flex gap-3">
+                <fa-icon [icon]="item.icon" 
+                          class="fa-xl me-1 mt-1 shrink-0"></fa-icon>
+                <div>
+                  <p class="font-semibold">
+                    {{ lang.data[`home_guide_${$index+1}_title`] }}
+                  </p>
+                  <p class="text-sm sm:text-base">
+                    {{ lang.data[`home_guide_${$index+1}_body`] }}
+                  </p>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

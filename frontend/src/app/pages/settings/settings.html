@@ -1,0 +1,57 @@
+<div class="min-h-full w-screen flex flex-col justify-center py-6">
+  <div class="flex justify-center items-center mx-auto w-screen">
+    
+    <div class="w-screen px-2 ms:px-4 md:px-6 lg:px-8 xl:px-10 2xl:px-12
+                origin-center duration-300 ease-out transition-transform"
+         style="transform: scale(0);"
+         [style.transform]="mounted() ? 'scale(1)' : 'scale(0)'">
+
+      @if (!selectedItem()) {
+
+        <!-- Title and image -->
+        <section class="w-full flex flex-col justify-center">
+          <div class="flex flex-1 items-center">
+            <div class="w-full grid grid-cols-1 gap-4 px-4 pt-10">
+              <div class="w-full flex items-center justify-center mb-5 px-2">
+                <div class="mb-5 flex flex-col sm:flex-row 
+                            justify-center items-center w-full">
+                  <fa-icon [icon]="icon.faGear"
+                            class="fa-2xl me-0 sm:me-3"></fa-icon>
+                  <div class="text-lg sm:text-xl md:text-2xl lg:text-3xl
+                              text-bold text-small-caps truncate capitalize-first">
+                    <span> {{ lang.data['settings'] || 'settings' }} </span>
+                  </div>
+                </div>
+              </div>
+              <div class="px-2 flex justify-center items-center">
+                <img class="w-full rounded-md opacity-60
+                            max-w-xl md:max-w-3xl lg:max-w-4xl"
+                     alt="settings"
+                     src="assets/media/image/pages/settings.webp" />
+              </div>
+            </div>
+          </div>
+        </section>
+
+      } @else {
+
+        <!-- Body -->
+        <div class="mt-10 flex flex-col justify-center">
+          <div class="text-left max-w-3xl mx-auto space-y-4">
+
+            <!-- Title -->
+            <h2 class="text-xl sm:text-2xl font-semibold text-small-caps">
+              {{ selectedItem()!.title }}
+            </h2>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>
+
+<!-- Sidebar -->
+<app-sidebar position="left"  
+             [topOffset]="headerHeight" 
+             title="settings">
+</app-sidebar>

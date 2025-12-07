@@ -1,0 +1,98 @@
+<div class="modal modal-message fixed top-0 left-0 z-50 p-5
+            flex justify-center items-center 
+            h-screen w-screen bg-gray-500/35"
+     style="opacity:0; pointer-events:none;"
+     [style.opacity]="isOpen() ? '1' : '0'"
+     [style.pointer-events]="isOpen() ? 'auto' : 'none'"
+     [attr.aria-hidden]="!isOpen()"
+     [appModalHideHelper]="!isOpen()"
+     (click)="onBackdropClick()">
+
+  <!-- Modal panel -->   
+  <div class="modal-panel flex flex-col justify-center items-center 
+              border border-gray-200 dark:border-gray-500 
+              rounded-xl shadow-md p-2 sm:p-3 md-p-5 max-w-lg
+              min-w-[280px] min-h-[150px] wrap-break-word
+              sm:min-w-xs md:min-w-sm lg:min-w-md xl:min-w-lg 
+              origin-center duration-300 ease-out
+              bg-gray-300 dark:bg-gray-800"
+       style="transform: scale(0);"
+       [style.transform]="isOpen() ? 'scale(1)' : 'scale(0)'"
+       (click)="$event.stopPropagation()">
+
+    <!-- Check config exist -->
+    @if (config(); as cfg) {
+
+      <!-- Header -->
+      <div class="modal-header text-center">
+        <div class="flex flex-col items-center">
+
+          <!-- Icon -->
+          @if (modalIcon(); as icon) {
+            <fa-icon [icon]="icon"
+                     [ngClass]="{
+                       'text-4xl md:text-5xl lg:text-6xl': cfg.type !== 'loading',
+                       'text-1xl md:text-2xl lg:text-3xl': cfg.type === 'loading',
+                       'text-red-600':  cfg.type === 'error',
+                       'text-green-600': cfg.type === 'info' || cfg.type === 'confirm',
+                       'text-neutral-500 animate-spin': cfg.type === 'loading'
+                     }"></fa-icon>
+          }
+
+          <!-- Title -->
+          @if (cfg.title) {
+            <h2 class="text-lg font-semibold my-3 truncate 
+                       whitespace-pre-line capitalize-first">
+              @if (cfg.translate) {
+                {{ cfg.title ? lang.data[cfg.title] : cfg.title }}
+                {{ cfg.titleSuffix || '' }}
+              } @else {
+                {{ cfg.title }}{{ cfg.titleSuffix || '' }}
+              }
+            </h2>
+          } @else {
+            <div class="mt-5"></div>
+          }
+        </div>
+      </div>
+
+      <!-- Body -->
+      <div class="modal-body text-center">
+        @if (cfg.message) {
+          <p class="text-sm md:text-base truncate
+                    whitespace-pre-line capitalize-first">
+            @if (cfg.translate) {
+              {{ cfg.message ? lang.data[cfg.message] : cfg.message }}
+              {{ cfg.messageSuffix || '' }}
+            } @else {
+              {{ cfg.message }}{{ cfg.messageSuffix || '' }}
+            }
+          </p>
+        } @else {
+          <div class="mt-5"></div>
+        }
+      </div>
+
+      <!-- Footer / buttons -->
+      <div class="modal-footer text-center pt-8">
+        @if (cfg.buttons?.length) {
+
+          @for (btn of cfg.buttons; track $index; let i = $index) {
+            <button type="button"
+                    (click)="onButtonClick(i)"
+                    class="px-4 py-2 mx-2 mb-2 text-sm rounded-md 
+                           text-white shadow min-w-[100px] cursor-pointer"
+                    [ngClass]="{
+                      'bg-green-700 hover:bg-green-800': btn.variant !== 'secondary',
+                      'bg-gray-600 hover:bg-gray-700': btn.variant === 'secondary'
+                    }">
+              <span class="capitalize">
+                {{ btn.label ? lang.data[btn.label] : btn.label }}
+              </span>
+            </button>
+          }
+        }
+      </div>
+    }
+  </div>
+</div>

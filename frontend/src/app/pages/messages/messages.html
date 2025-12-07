@@ -1,0 +1,563 @@
+<div class="min-h-full w-screen flex flex-col justify-center">
+  <div class="flex justify-center items-center mx-auto w-screen">
+    
+    <div class="origin-center duration-300 ease-out transition-transform"
+         style="transform: scale(0);"
+         [style.transform]="mounted() ? 'scale(1)' : 'scale(0)'">
+
+      <!-- Panel -->
+      <div class="h-[76vh] sm:h-[80vh] w-[91vw] flex flex-col shadow-sm
+                  border border-gray-300 dark:border-gray-600">
+
+        <!-- Panel header -->
+        <div class="flex-none border-b text-lg
+                    border-gray-300 dark:border-gray-600">
+          <div class="px-4 py-1"
+               [ngClass]="{'bg-green-800 text-white': isActive()}">
+            <div class="flex items-center justify-between gap-2">
+
+              <!-- Title -->
+              <div class="flex items-center gap-1">
+                <fa-icon [icon]="icon.faMessage"
+                          class="fa-lg"></fa-icon>
+                <span class="text-small-caps
+                            truncate capitalize-first inline-block">
+                  {{ lang.data['messages'] || 'messages' }}
+                </span>
+              </div>
+
+              <!-- Commands header -->
+              <ul class="flex items-center">
+
+                @for (c of getCommands('header'); track c.id) {
+                  <li class="py-1 px-2 cursor-pointer rounded"
+                      [class.opacity-50]="isCmdEnabled(c.id)"
+                      [class.pointer-events-none]="isCmdEnabled(c.id)"
+                      (click)="headerEvents(c.id)"
+                      [class.hover:bg-gray-700]="!c?.deanger"
+                      [ngClass]="{ 'hover:bg-red-800/60': c?.deanger }">
+                    <fa-icon [icon]="c.icon"
+                              class="fa-sm"></fa-icon>
+                  </li>
+                }
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel body -->
+        <div class="flex-1 min-w-full min-h-0">
+
+          <!-- Wrapper scrollable -->
+          <div class="h-full w-full overflow-scroll">
+
+            @if (isPageMode()) {
+
+              <!-- Form -->
+              <div class="flex h-full items-start lg:items-center justify-center">
+
+                <form #reactiveForm
+                      [formGroup]="formGroup"
+                      (ngSubmit)="confirm()"
+                      class="w-full max-w-4xl p-5 lg:p-0"
+                      novalidate>
+
+                  <!-- Grid -->
+                  <div class="grid grid-cols-1 lg:grid-cols-2">
+                  
+                    <!-- Form group 1 -->
+                    <div class="px-5">
+
+                      <!-- Image -->
+                      <div class="mb-3">
+                        <div class="flex flex-col lg:flex-row 
+                                    lg:items-center lg:space-x-4 mb-1">
+                          <div class="form-label form-label-block-inline
+                                      form-label-disablede">
+                            <div class="flex items-center justify-start lg:justify-end
+                                        text-gray-900 dark:text-white">
+                              <fa-icon [icon]="icon.faIdCard" class="me-1"></fa-icon>
+                              <span class="truncate capitalize-first 
+                                          text-gray-900 dark:text-white">
+                                {{ lang.data['sender'] || 'sender' }}:
+                              </span>
+                            </div>
+                          </div>
+                          <div class="mt-1 lg:mt-0 lg:w-4/6">
+                            <div class="inline-block relative">
+                              <input id="image"
+                                    type="file"
+                                    #fileInput
+                                    data-fc="image"
+                                    accept="image/*"
+                                    class="hidden form-disabled"
+                                    spellcheck="false"
+                                    autocomplete="off"
+                                    disabled>
+                              <label for="image"
+                                    class="form-label-disabled">
+                                <div class="form-control-img_preview 
+                                            form-label-disabled"
+                                    [style.background-image]="'url(' + 
+                                    (selectedRow()?.img || 
+                                    (selectedRow()?.gender === 'F' ? 
+                                      'assets/media/image/blank/female-blank.webp' : 
+                                      'assets/media/image/blank/male-blank.webp')) + ')'">
+                                </div>
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Name -->
+                      <div class="mb-3">
+                        <div class="flex flex-col lg:flex-row 
+                                    lg:items-center lg:space-x-4 mb-1">
+                          <label for="name"
+                                class="form-label form-label-block-inline
+                                        form-label-disabled">
+                          <div class="flex items-center justify-start lg:justify-end
+                                      text-gray-900 dark:text-white">
+                            <fa-icon [icon]="icon.faUser" 
+                                      class="me-1"></fa-icon>
+                            <span class="truncate capitalize-first">
+                              {{ lang.data['name'] || 'name' }}:
+                            </span>
+                          </div>
+                          </label>
+                          <div class="mt-1 lg:mt-0 lg:w-4/6">
+                            <div class="flex items-center">
+                              <div class="relative w-full">
+                                <input type="name"
+                                      id="name"
+                                      maxlength="253"
+                                      class="form-control form-disabled"
+                                      autocomplete="off"
+                                      spellcheck="false"
+                                      [value]="getCell(selectedRow(),'name')"/>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Gender -->
+                      <div class="mb-3">
+                        <div class="flex lg:flex-row items-center 
+                                    lg:space-x-4 mb-1 h-10">
+                          <div class="block text-sm font-medium lg:w-2/6 lg:text-right">
+                            <div class="flex items-center justify-start lg:justify-end">
+                              <fa-icon [icon]="icon.faVenusMars" class="me-1"></fa-icon>
+                              <span class="truncate capitalize-first 
+                                          text-gray-900 dark:text-white">
+                                {{ lang.data['gender'] || 'gender' }}:
+                              </span>
+                            </div>
+                          </div>
+                          <div class="ms-5 lg:ms-0 lg:w-4/6">
+                            <div class="flex flex-row w-full items-center">
+                              <input id="female"
+                                    type="radio"
+                                    name="gender"
+                                    [value]="'F'"
+                                    [checked]="selectedRow()?.gender === 'F'"
+                                    class="form-control-radio form-disabled">
+                              <label for="female"
+                                    class="form-label-radio form-label-disabled">
+                                {{ lang.data['woman'] || 'woman' }}
+                              </label>
+                              <input id="male"
+                                    type="radio"
+                                    name="gender"
+                                    [value]="'M'"
+                                    [checked]="selectedRow()?.gender === 'M'"
+                                    class="form-control-radio form-disabled">
+                              <label for="male"
+                                    class="form-label-radio form-label-disabled">
+                                {{ lang.data['man'] || 'man' }}
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Email -->
+                      <div class="mb-3">
+                        <div class="flex flex-col lg:flex-row 
+                                    lg:items-center lg:space-x-4 mb-1">
+                          <label for="email"
+                                class="form-label form-label-block-inline
+                                        form-label-disabled">
+                          <div class="flex items-center justify-start lg:justify-end
+                                      text-gray-900 dark:text-white">
+                            <fa-icon [icon]="icon.faEnvelope" 
+                                      class="me-1"></fa-icon>
+                            <span class="truncate capitalize-first">
+                              {{ lang.data['email'] || 'email' }}:
+                            </span>
+                          </div>
+                          </label>
+                          <div class="mt-1 lg:mt-0 lg:w-4/6">
+                            <div class="flex items-center">
+                              <div class="relative w-full">
+                                <input type="email"
+                                      id="email"
+                                      maxlength="253"
+                                      class="form-control form-disabled"
+                                      autocomplete="email"
+                                      spellcheck="false"
+                                      [value]="selectedRow()?.email"/>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Phone -->
+                      <div class="mb-3">
+                        <div class="flex flex-col lg:flex-row 
+                                    lg:items-center lg:space-x-4 mb-1">
+                          <label for="phone"
+                                class="form-label form-label-block-inline
+                                        form-label-disabled">
+                            <div class="flex items-center justify-start lg:justify-end
+                                        text-gray-900 dark:text-white">
+                              <fa-icon [icon]="icon.faMobileScreenButton" 
+                                        class="me-1"></fa-icon>
+                              <span class="truncate capitalize-first">
+                                {{ lang.data['phone'] || 'phone' }}:
+                              </span>
+                            </div>
+                          </label>
+                          <div class="mt-1 lg:mt-0 lg:w-4/6">
+                            <div class="flex items-center">
+                              <div class="relative w-full">
+                                <input type="tel"
+                                      id="phone"
+                                      maxlength="20"
+                                      class="form-control form-disabled"
+                                      autocomplete="off"
+                                      spellcheck="false"
+                                      [value]="selectedRow()?.phone"/>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Form group 2 -->
+                    <div class="px-5">
+
+                      <!-- Status -->
+                      <div class="mb-3">
+                        <div class="flex flex-col lg:flex-row 
+                                    lg:items-center lg:space-x-4 mb-1">
+                          <label for="status_id" 
+                                class="form-label form-label-block-inline"
+                                [class.form-label-disabled]="!isEditMode()">
+                            <div class="flex items-center justify-start lg:justify-end
+                                        text-gray-900 dark:text-white">
+                              <fa-icon [icon]="icon.faFlag" class="me-1"></fa-icon>
+                              <span class="truncate capitalize-first">
+                                {{ lang.data['status'] || 'status' }}:
+                              </span>
+                            </div>
+                          </label>
+                          <div class="mt-1 lg:mt-0 lg:w-4/6">
+                            <div class="flex items-center">
+                              <div class="relative w-full">
+                                <select id="status_id"
+                                        name="status_id"
+                                        formControlName="status_id"
+                                        class="form-control"
+                                        autocomplete="off"
+                                        spellcheck="false"
+                                        [class.form-disabled]="!isEditMode()"
+                                        [value]="selectedRow()?.status_id">
+                                  <option value="">
+                                    -- {{ lang.data['please_answer'] || 'please answer' }} --
+                                  </option>
+                                  @for (s of getStatuses(); track s.status_id) {
+                                    <option [value]="s.status_id">
+                                      {{ lang.data[s.name_id] || s.name_id }}
+                                    </option>
+                                  }
+                                </select>
+                                 @if (f.status_id.value) {
+                                  <button type="button"
+                                          tabindex="-1"
+                                          (click)="clear('status_id')"
+                                          class="form-btn-clear right-9">
+                                    <fa-icon [icon]="icon.faXmark" class="fa-2xs"></fa-icon>
+                                  </button>
+                                }
+                              </div>
+                              <fa-icon [icon]="icon.faCheck"
+                                       [ngClass]="{ 'invisible': !f.status_id.valid }"
+                                        class="ms-2 text-green-700"></fa-icon>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Contact to -->
+                      <div class="mb-3">
+                        <div class="flex flex-col lg:flex-row 
+                                    lg:items-center lg:space-x-4 mb-1">
+                          <label for="worker_id" 
+                                class="form-label form-label-block-inline"
+                                [class.form-label-disabled]="!isEditMode()">
+                            <div class="flex items-center justify-start lg:justify-end
+                                        text-gray-900 dark:text-white">
+                              <fa-icon [icon]="icon.faUser" class="me-1"></fa-icon>
+                              <span class="truncate capitalize-first">
+                                {{ lang.data['contact_to'] || 'contact_to' }}:
+                              </span>
+                            </div>
+                          </label>
+                          <div class="mt-1 lg:mt-0 lg:w-4/6">
+                            <div class="flex items-center">
+                              <div class="relative w-full">
+                                <select id="worker_id"
+                                        name="worker_id"
+                                        formControlName="worker_id"
+                                        class="form-control"
+                                        [class.form-disabled]="!isEditMode()"
+                                        [value]="selectedRow()?.worker_id"
+                                        autocomplete="off"
+                                        spellcheck="false">
+                                  <option value="0">
+                                    -- {{ lang.data['anyone'] || 'anyone' }} --
+                                  </option>
+                                  @for (x of getColleagues(); track x.worker_id) {
+                                    <option [value]="x.worker_id">
+                                      {{ getDisplayName(x) }}
+                                    </option>
+                                  }
+                                </select>
+                                @if (f.worker_id.value) {
+                                  <button type="button"
+                                          tabindex="-1"
+                                          (click)="clear('worker_id')"
+                                          class="form-btn-clear right-9">
+                                    <fa-icon [icon]="icon.faXmark" class="fa-2xs"></fa-icon>
+                                  </button>
+                                }
+                              </div>
+                              <fa-icon [icon]="icon.faCheck"
+                                        class="invisible ms-2 text-green-700"></fa-icon>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Subject -->
+                      <div class="mb-3">
+                        <div class="flex flex-col lg:flex-row 
+                                    lg:items-center lg:space-x-4 mb-1">
+                          <label for="subject" 
+                                class="form-label form-label-block-inline
+                                        form-label-disabled">
+                            <div class="flex items-center justify-start lg:justify-end
+                                        text-gray-900 dark:text-white">
+                              <fa-icon [icon]="icon.faCircleExclamation" class="me-1"></fa-icon>
+                              <span class="truncate capitalize-first">
+                                {{ lang.data['subject'] || 'subject' }}:
+                              </span>
+                            </div>
+                          </label>
+                          <div class="mt-1 lg:mt-0 lg:w-4/6">
+                            <div class="flex items-center">
+                              <div class="relative w-full">
+                                <input type="text"
+                                       id="subject"
+                                       class="form-control form-disabled"
+                                       autocomplete="off"
+                                       spellcheck="false"
+                                       [value]="getCell(selectedRow(),'subject_name_id')"/>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                  
+                      <!-- Message -->
+                      <div class="mb-3">
+                        <div class="flex flex-col lg:flex-row lg:items-start lg:space-x-4 mb-1">
+                          <label for="message" 
+                                class="form-label form-label-block-inline lg:mt-4">
+                            <div class="flex items-center justify-start lg:justify-end">
+                              <fa-icon [icon]="icon.faCommentDots" class="me-1"></fa-icon>
+                              <span class="truncate capitalize-first">
+                                {{ lang.data['message'] || 'message' }}:
+                              </span>
+                            </div> 
+                          </label>
+                          <div class="mt-1 lg:mt-0 lg:w-4/6">
+                            <div class="flex items-start">
+                              <div class="relative w-full">
+                                <textarea id="message"
+                                          autocomplete="off"
+                                          spellcheck="false"
+                                          class="form-control form-disabled mt-2"
+                                          [value]="selectedRow()?.message"
+                                          rows="6">
+                                </textarea>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Buttons -->
+                      <div class="text-center mt-5"
+                          [class.invisible]="!isEditMode()">
+
+                        <!-- Submit -->
+                        <button type="submit"
+                                class="form-btn-primary mb-3"
+                                [disabled]="formGroup.invalid">
+                          <div class="flex items-center justify-center">
+                            <fa-icon [icon]="icon.faFloppyDisk" class="fa-lg me-1"></fa-icon>
+                            <span class="capitalize">
+                              {{ lang.data['save'] || 'save' }}
+                            </span>
+                          </div>
+                        </button>
+
+                        <!-- Cancel -->
+                        <button type="button"
+                                class="form-btn-secondary mb-3"
+                                (click)="changeData('cancel')">
+                          <div class="flex items-center justify-center">
+                            <fa-icon [icon]="icon.faCircleXmark" class="fa-lg me-1"></fa-icon>
+                            <span class="capitalize">
+                              {{ lang.data['cancel'] || 'cancel' }}
+                            </span>
+                          </div>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+            } @else {
+
+              <!-- Table -->
+              <table class="min-w-[90vw] text-sm table-fixed mx-auto
+                            text-left rtl:text-right">
+                <thead class="sticky top-0 z-10 border-b
+                              border-gray-300 dark:border-gray-600
+                              bg-gray-100 dark:bg-gray-800">
+                  <tr>
+                    @for (col of columns; track col.key) {
+                      <th scope="col" 
+                          class="px-4 py-3 font-medium whitespace-nowrap
+                                truncate capitalize-first">
+                        {{ lang.data[col.labelKey] || col.labelKey }}
+                      </th>
+                    }
+                  </tr>
+                </thead>
+                <tbody>
+                @if (messages().length) {
+                  @for (row of messages(); track $index) {
+                    <tr class="bg-neutral-primary border-b
+                              border-gray-300 dark:border-gray-600"
+                        (click)="setRowPointer($index)"
+                        (dblclick)="toggleOfView()"
+                        [ngClass]="{'bg-green-500/10' : 
+                                    rowPointer() === $index,
+                                    'hover:bg-gray-500/10' : 
+                                    rowPointer() !== $index}">
+                      @for (col of columns; track col.key) {
+                        <td class="px-4 py-1 align-middle whitespace-nowrap">
+                          @if (col.key === 'name') {
+                            <div class="flex items-center gap-3 flex-nowrap">
+                              <img [src]="getAvatarSrc(row)" alt=""
+                                    class="h-8 w-8 rounded-full object-cover
+                                          border border-gray-500/40"
+                                    loading="lazy" />
+                              <span class="truncate capitalize-first flex-nowrap">
+                                {{ getCell(row, col.key) }}
+                              </span>
+                            </div>
+                          } @else {
+                            <span class="truncate capitalize-first">
+                              {{ getCell(row, col.key) }}
+                            </span>
+                          }
+                        </td>
+                      }
+                    </tr>
+                  }
+                } @else {
+                  <tr class="bg-neutral-primary border-b 
+                            border-gray-300 dark:border-gray-600">
+                    <td class="text-center px-4 py-1 whitespace-nowrap" 
+                        [attr.colspan]="colSpan">
+                      {{ lang.data['empty'] || 'empty' }}
+                    </td>
+                  </tr>
+                }
+                </tbody>
+              </table>
+            }
+          </div>
+        </div>
+
+        <!-- Panel footer -->
+        <div class="flex-none border-t
+                    border-gray-300 dark:border-gray-600
+                    bg-gray-100 dark:bg-gray-800">
+          <div class="px-4 py-2 font-medium flex items-center justify-between">
+
+            <!-- Commands -->
+            <div class="flex flex-col sm:flex-row items-center 
+                        gap-2 sm:gap-10 mx-auto">
+
+              <!-- Commands change position -->
+              <ul class="flex justify-center items-center gap-0">
+                @for (c of getCommands('pos'); track c.id) {
+                  <li class="py-1 px-2 cursor-pointer rounded"
+                      [class.opacity-50]="isCmdEnabled(c.id)"
+                      [class.pointer-events-none]="isCmdEnabled(c.id)"
+                      (click)="changePosition(c.id)"
+                      [class.hover:bg-gray-700]="!c?.deanger"
+                      [ngClass]="{ 'hover:bg-red-800/60': c?.deanger }">
+                    <fa-icon [icon]="c.icon"
+                              class="fa-sm"></fa-icon>
+                  </li>
+                }
+              </ul>
+            
+              <!-- Commands change data -->
+              <ul class="flex justify-center items-center gap-0">
+
+                @for (c of getCommands('data'); track c.id) {
+                  <li class="py-1 px-2 cursor-pointer rounded"
+                      [class.opacity-50]="isCmdEnabled(c.id)"
+                      [class.pointer-events-none]="isCmdEnabled(c.id)"
+                      (click)="changeData(c.id)"
+                      [class.hover:bg-gray-700]="!c?.deanger"
+                      [ngClass]="{ 'hover:bg-red-800/60': c?.deanger }">
+                    <fa-icon [icon]="c.icon"
+                              class="fa-sm"></fa-icon>
+                  </li>
+                } 
+              </ul>
+            </div>
+
+            <!-- Position / Number of records -->
+            <div class="flex items-center">
+                {{ rowPointer() + 1 }} / {{ messages().length }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

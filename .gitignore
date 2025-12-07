@@ -1,0 +1,37 @@
+# General
+.DS_Store
+Thumbs.db
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# Node/Angular
+node_modules/
+dist/
+build/
+.vite/
+.angular/
+.angular/cache/
+
+# Python
+__pycache__/
+.venv/
+venv/
+
+# PHP/Laravel
+/vendor/
+storage/
+bootstrap/cache/
+
+# Környezet
+.env
+.env.*
+!.env.example
+/temp/
+
+# Video files – ne küldjük fel GitHubra
+#/frontend/angular/src/assets/media/video/*
+#!/frontend/angular/src/assets/media/video/odry_tamas_2800_short_01.mp4
+#!/frontend/angular/src/assets/media/video/.gitkeep

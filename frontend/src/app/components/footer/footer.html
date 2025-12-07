@@ -1,0 +1,173 @@
+<footer class="rounded-lg px-4 py-2
+               sm:flex sm:items-center sm:justify-between
+               bg-gray-100 dark:bg-gray-800">
+
+  <!-- Author -->
+  <p class="text-sm text-center min-h-[32px] flex items-center
+            justify-center sm:justify-start
+            text-gray-500 dark:text-gray-400">
+    <span>&copy; 2025-{{ currentYear }}</span>
+    <span class="flex items-center ms-2">
+      @if (author()) {
+        <span class="w-8 h-8 inline-block
+                     rounded-full bg-top bg-cover"
+             [style.background-image]="'url(' + 
+             (author()!.img || 
+             (author()!.gender === 'F' ? 
+                    'assets/media/image/blank/female-blank.webp' : 
+                    'assets/media/image/blank/male-blank.webp')) + ')'">
+        </span>
+        <span class="ms-1">
+          {{ getDisplayName(author()) }}
+        </span>
+      }
+    </span>
+  </p>
+
+  <!-- Breakpoints -->
+  <div class="text-center">
+    <span class="block sm:hidden">XS</span>
+    <span class="hidden sm:block md:hidden">SM</span>
+    <span class="hidden md:block lg:hidden">MD</span>
+    <span class="hidden lg:block xl:hidden">LG</span>
+    <span class="hidden xl:block 2xl:hidden">XL</span>
+    <span class="hidden 2xl:block">2XL</span>
+  </div>
+
+  <!-- Social media / Messages -->
+  <div class="flex justify-center items-center space-x-1">
+    <ul class="flex flex-row">
+
+      <!-- Social media -->
+      @for (item of socialMediaIcons | keyvalue; track item.key) {
+        <li class="p-1 rounded relative
+                  hover:bg-gray-200 dark:hover:bg-gray-700">
+          <a href="#" 
+            class="inline-flex justify-center py-2  
+                    rounded-lg cursor-pointer">
+            <fa-icon [icon]="item.value" class="fa-lg"></fa-icon>
+          </a>
+        </li>
+      }
+      
+      <!-- Messages -->
+      @if (isLoggedIn() && isWorker()) {
+        <li #msgRoot
+            class="relative flex items-center">
+
+          <!-- Message button -->
+          <div class="relative ms-5 p-3 rounded cursor-pointer
+                      hover:bg-gray-200 dark:hover:bg-gray-700">
+            <button id="message-menu-button"
+                    type="button" 
+                    class="flex cursor-pointer" 
+                    (click)="toggle('msg', $event)">
+              <div class="flex items-center">
+                <fa-icon [icon]="icon.faBell" 
+                        class="fa-lg"></fa-icon>
+                <fa-icon [icon]="icon.faAngleUp" 
+                        class="fa-sm inline-block transition-transform"
+                        [ngClass]="{'rotate-180': isOpen('msg')}"></fa-icon>
+              </div>
+            </button>
+            @if (messages().length) {
+              <div class="absolute top-0 end-0 text-red-400 text-sm font-bold">
+                {{ messages().length }}
+              </div>
+            }
+          </div>
+
+          <!-- Messages dropdown -->
+          <div class="absolute z-10 !end-0 !bottom-25 sm:!bottom-14
+                      py-2 whitespace-nowrap w-max max-w-xs
+                      hidden text-base list-none divide-y
+                      divide-gray-100 shadow-sm dark:divide-gray-600
+                      bg-gray-200 dark:bg-gray-700 border rounded-lg
+                      border-gray-300 dark:border-gray-500"
+              [class.hidden]="!isOpen('msg')">
+
+            <!-- Messages -->
+            <ul class="max-h-[72vh] overflow-y-auto">
+
+              <!-- Messages items -->
+              @if (messages().length) {
+                @for (x of messages(); track x.id) {
+                  <li>
+                    <a class="block px-4 py-2 cursor-pointer
+                              hover:bg-gray-100 dark:hover:bg-gray-800"
+                      role="menuitem">
+                      <div class="flex items-center mb-1">
+                        <span class="w-10 h-10 inline-block
+                                    rounded-full bg-top bg-cover"
+                            [style.background-image]="'url(' + 
+                            (x.img || (x.gender === 'F' ? 
+                                'assets/media/image/blank/female-blank.webp' : 
+                                'assets/media/image/blank/male-blank.webp')) + ')'">
+                        </span>
+                        <span class="ms-2 text-lg font-bold">
+                          {{ getDisplayName(x) }}
+                        </span>
+                      </div>
+                      <div class="text-sm whitespace-normal wrap-break-word">
+                        @if (x.status_name_id) {
+                          <p class="mb-1">
+                            <span class="font-bold truncate capitalize-first inline-block">
+                              {{ lang.data['status'] || 'status' }}:
+                            </span>
+                            <span class="ms-1 truncate capitalize-first inline-block">
+                              {{ lang.data[x.status_name_id] || x.status_name_id }}
+                            </span>
+                          </p>
+                        }
+                        @if (x.subject_name_id) {
+                          <p class="mb-1">
+                            <span class="font-bold truncate capitalize-first inline-block">
+                              {{ lang.data['subject'] || 'subject' }}:
+                            </span>
+                            <span class="ms-1 truncate capitalize-first inline-block">
+                              {{ lang.data[x.subject_name_id] || x.subject_name_id }}
+                            </span>
+                          </p>
+                        }
+                        @if (x.message) { <p>{{ x.message }}</p> }
+                        @if (x.created_at) { 
+                          <p class="mt-1 font-bold">
+                            {{ x.created_at }}
+                          </p> 
+                        }
+                      </div>
+                    </a>
+                  </li>
+                }
+              } @else {
+                <li class="flex justify-center border-b p-2 pb-4">
+                  <span class="truncate capitalize-first">
+                    {{ lang.data['messages_new_not'] || 'messages_new_not' }}!
+                  </span>
+                </li>
+              }
+            </ul>
+
+            <!-- View all button -->
+            <div class="flex justify-center">
+              <button type="button"
+                      class="p-2 w-full mt-2 cursor-pointer
+                             hover:bg-gray-100 dark:hover:bg-gray-800"
+                      [ngClass]="{'btn-disabled' : isActive('messages')}"
+                      [disabled]="isActive('messages')"
+                      (click)="confirmRouteToMessages()">
+                <div class="flex items-center justify-center">
+                  <fa-icon [icon]="icon.faEye" 
+                          class="fa-lg me-1"></fa-icon>
+                  <span class="truncate capitalize-first">
+                    {{ lang.data['view_all'] || 'view all' }}
+                  </span>
+                </div>
+              </button>
+            </div>
+          </div>
+        </li>
+      }
+    </ul>
+  </div>
+</footer>
