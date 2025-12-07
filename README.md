@@ -12,12 +12,11 @@
 -    
 
 ### Install (first time)
-- cd frontend/angular
+- cd frontend
 - npm install
 - cd ..
-- cd ..
   
-- cd backend/laravel
+- cd backend
 - composer install
 
 - Create .env file
@@ -39,12 +38,12 @@
   - name    : financial_mentor
   - encoding: utf8mb4_unicode_ci
   
-- php artisan migrate
+//////- php artisan migrate
   
 - PhpMyAdmin:
   - Open database
   - Import from app folder:
-    modern-web-frameworks/backend/db/financial_mentor.sql
+    backend/db/financial_mentor.sql
 
 ### Run (servers)
 Start:
@@ -52,10 +51,10 @@ Start:
 
 Or start both separately:
 - Backend
-  - cd backend/laravel
+  - cd backend
   - php artisan serve
 - Frontend
-  - cd frontend/angular
+  - cd frontend
   - npm start
   
 ### MySQL
