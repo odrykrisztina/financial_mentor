@@ -77,6 +77,7 @@
                             </span>
                             <div class="mt-3">
                               <video #lessonVideo
+                                     onloadstart="this.volume=0.5"
                                      class="w-full rounded-2xl shadow-lg 
                                             border border-slate-700/40 object-cover"
                                      [ngClass]="{'aspect-[9/16]': att.isPortrait, 
@@ -132,7 +133,8 @@
                                   [class.form-btn-active]="openTaskIndex() === $index"
                                   [class.form-btn-disabled]="isEditMode()">
                                   
-                            <div class="flex flex-row items-center justify-between gap-2 w-full">
+                            <div class="flex flex-row items-center 
+                                        justify-between gap-2 w-full">
                               
                               <div class="flex items-center gap-2 min-w-0">
                                 <span class="truncate">
@@ -164,9 +166,7 @@
                       <!-- Task body -->
                       @if (openTaskIndex() === $index) {
 
-                        <div class="task-body w-full
-                                    border border-s-0 border-e-0 
-                                    border-t-0 border-b-default">
+                        <div class="w-full border-0 border-b overflow-hidden">
 
                           <!-- Grid -->
                           <div class="grid grid-cols px-2">

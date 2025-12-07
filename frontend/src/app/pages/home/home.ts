@@ -62,19 +62,14 @@ export class Home implements AfterViewInit, OnDestroy {
         if (!entry) return;
 
         const ratio = entry.intersectionRatio;
-
-        // Ha a videó legalább kb. félig látszik -> play
         if (ratio >= 0.5) {
           videoEl.play().catch(() => {
-            // Autoplay policy esetén ne dobjon hibát
           });
         } else {
-          // Ha ennél kevesebb látszik -> pause
           videoEl.pause();
         }
       },
       {
-        // Több threshold, hogy a ratio szépen frissüljön
         threshold: [0, 0.25, 0.5, 0.75, 1.0]
       }
     );

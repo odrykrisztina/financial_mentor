@@ -1,8 +1,10 @@
 # Financial mentor
 
 ### Require environment:
-- Node.js       v22.20.0 +
+- Node          v22.20.0 +
 - npm           11.2.0 +
+- typescript    5.9.3 +
+- Angular CLI   20.3.13 +
 - PHP           8.2.12 +
   Set to environment path 
       
@@ -32,17 +34,19 @@
   - DB_DATABASE=financial_mentor
   - DB_USERNAME=root
   - DB_PASSWORD=
-
-- create Database in MySQL
-  (if exist drop all tables)
-  - name    : financial_mentor
-  - encoding: utf8mb4_unicode_ci
-  - cd ..
   
+- cd ..
+
 - PhpMyAdmin:
-  - Open database
-  - Import from app folder:
-    backend/db/financial_mentor.sql
+  - create Database in MySQL
+    - if exist drop all tables
+    - Or create new:
+      - name    : financial_mentor
+      - encoding: utf8mb4_unicode_ci
+  
+    - Open database
+    - Import from app folder:
+      backend/db/financial_mentor.sql
 
 ### Run (servers)
 #### In root folder
