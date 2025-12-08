@@ -297,5 +297,6 @@
   "solution_send_confirm": "biztosan el küldi a megoldást",
   "solution_min_length": "a megoldás minimális hossza",
   "completed": "befejezve",
-  "interrupt": "megszakítja"
+  "interrupt": "megszakítja",
+  "modify": "módosít"
 }

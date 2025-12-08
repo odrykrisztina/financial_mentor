@@ -297,5 +297,6 @@
   "solution_send_confirm": "möchten sie die lösung wirklich senden",
   "solution_min_length": "die mindestlänge der lösung beträgt",
   "completed": "vollendet",
-  "interrupt": "unterbrechen"
+  "interrupt": "unterbrechen",
+  "modify": "ändern"
 }

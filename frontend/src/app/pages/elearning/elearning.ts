@@ -81,6 +81,7 @@ export class Elearning implements AfterViewInit {
   selectedItem  = signal<SidebarItem | null>(null);
   isEditMode = signal<boolean>(false);
   isFormGroupInvalid = signal<boolean>(true);
+  isAllFormGroupInvalid = signal<boolean>(true);
   error = signal<string | null>(null);
   
   @ViewChild('reactiveForm', { static: false })
@@ -130,21 +131,6 @@ export class Elearning implements AfterViewInit {
     this.sidebar.toggle(position);
   }
 
-  // openItem(
-  //   source: 'finance' | 'software',
-  //   item: SidebarItem
-  // ) {
-  //   this.selectedItem.set(item);
-  //   this.openTaskIndex.set(null);
-    
-  //   this.formGroup.reset({ solution: '' });
-  //   this.formGroup.disable();
-  //   this.isEditMode.set(false);
-  //   setTimeout(() => {
-  //     window.scrollTo({top:0, left:0, behavior:'smooth'});
-  //   }, 300);
-  // }
-
   openItem(
     source: 'finance' | 'software',
     item: SidebarItem
@@ -152,7 +138,6 @@ export class Elearning implements AfterViewInit {
     this.selectedItem.set(item);
     this.openTaskIndex.set(null);
 
-    // Aktuális form teljes tisztítása (új lecke)
     this.formGroup.reset({ solution: '' });
     this.formGroup.disable();
     this.isEditMode.set(false);
@@ -197,40 +182,30 @@ export class Elearning implements AfterViewInit {
     this.isFormGroupInvalid.set(this.formGroup.invalid);
   }
 
-  // toggleTask(index: number) {
-  //   if (this.isEditMode()) return;
-  //   const current = this.openTaskIndex();
-  //   this.openTaskIndex.set(current === index ? null : index);
-  //   this.formGroup.reset({ solution: '' });
-  //   this.formGroup.disable();
-  //   this.isEditMode.set(false);
-  // }
-
   toggleTask(index: number) {
     
-    if (this.isEditMode()) return;   // szerkesztés közben ne váltsunk feladatot
+    if (this.isEditMode()) return; 
 
     const current = this.openTaskIndex();
 
-    // 1) jelenlegi nyitott feladat megoldásának mentése
+    // Jlenlegi nyitott feladat megoldásának mentése
     if (current !== null) {
       this.saveCurrentSolution();
     }
 
-    // 2) új index
+    // Új index
     const newIndex = current === index ? null : index;
     this.openTaskIndex.set(newIndex);
 
-    // 3) új feladat megoldásának betöltése
+    // Új feladat megoldásának betöltése
     this.loadSolutionForTask(newIndex);
 
-    // 4) scroll az adott feladatra (ha nyitva van)
+    // Scroll az adott feladatra
     if (newIndex !== null) {
       setTimeout(() => this.scrollToTask(newIndex), 0);
     }
   }
 
-  
   clear(field: keyof FormControls, value: string = ''): void {
     const controlName: keyof FormControls & string = (field as any);
     this.forms.clearControl(this.formGroup, controlName, this.formElement, value);
@@ -260,35 +235,19 @@ export class Elearning implements AfterViewInit {
     }, 1000);
   }
 
+  onCancel() { 
+    this.modal.confirm('exit_confirm', { 
+      onYes: () => {
+        this.selectedItem.set(null);
+      } 
+    }); 
+  }
+
   confirm() { 
     this.modal.confirm('solution_send_confirm', { 
       onYes: () => this.onSubmit() 
     });
   }
-
-  // toggleEdit(type: string) {
-  //   const isNowEdit = !this.isEditMode();
-  //   this.isFormGroupInvalid.set(this.formGroup.invalid);
-  //   switch(type) {
-  //     case 'start-modify':
-  //       this.formGroup.enable();
-  //       this.isEditMode.set(isNowEdit);
-  //       this.forms.setFocus(this.formGroup, this.formElement)
-  //       break;
-  //     case 'completed':
-  //       this.formGroup.disable();
-  //       this.isEditMode.set(isNowEdit);
-  //       break;
-  //     case 'interrupt':
-  //       this.modal.confirm('solution_interrupt', { 
-  //         onYes: () => {
-  //           this.formGroup.disable();
-  //           this.isEditMode.set(isNowEdit);
-  //         },
-  //         onNo: () => { this.forms.setFocus(this.formGroup, this.formElement) }
-  //       });
-  //   }
-  // }
 
   toggleEdit(type: string) {
     const isNowEdit = !this.isEditMode();
@@ -304,7 +263,7 @@ export class Elearning implements AfterViewInit {
       case 'completed':
         this.formGroup.disable();
         this.isEditMode.set(isNowEdit);
-        this.saveCurrentSolution();         // ⬅︎ ÚJ
+        this.saveCurrentSolution();  
         break;
 
       case 'interrupt':
@@ -312,7 +271,7 @@ export class Elearning implements AfterViewInit {
           onYes: () => {
             this.formGroup.disable();
             this.isEditMode.set(isNowEdit);
-            this.saveCurrentSolution();     // ⬅︎ ÚJ
+            this.saveCurrentSolution();
           },
           onNo: () => { 
             this.forms.setFocus(this.formGroup, this.formElement);
@@ -332,7 +291,6 @@ export class Elearning implements AfterViewInit {
     const rect        = el.getBoundingClientRect();
     const scrollTop   = window.scrollY || window.pageYOffset;
     const offsetTop   = rect.top + scrollTop - (this.headerHeight + 16); 
-    // +16px kis „lélegző” tér a header alá
 
     window.scrollTo({
       top: offsetTop,

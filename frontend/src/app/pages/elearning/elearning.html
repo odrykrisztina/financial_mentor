@@ -109,11 +109,15 @@
             <!-- Tasks -->
             @if (selectedItem()!.tasks?.length) {
               <div class="pt-3">
+
+                <!-- Title -->
                 <h3 class="font-medium mb-2 text-left text-lg">
                   <span class="inline-block truncate capitalize-first">
                     {{ lang.data['tasks'] || 'tasks' }}:
                   </span>
                 </h3>
+
+                <!-- Tasks -->
                 <ul class="list-inside space-y-2 
                            text-sm leading-relaxed">
 
@@ -233,26 +237,14 @@
                                   <!-- Buttons -->
                                   <div class="text-center mb-3">
 
-                                    <!-- Submit -->
-                                    <button type="submit"
-                                            [disabled]="isFormGroupInvalid()"
-                                            [class.hidden]="isEditMode()"
-                                            class="form-btn-primary mb-3 p-3">
-                                      <div class="flex items-center justify-center">
-                                        <fa-icon [icon]="icon.faPaperPlane" class="fa-lg me-1"></fa-icon>
-                                        <span class="truncate capitalize-first">
-                                          {{ lang.data['send'] || 'send' }}
-                                        </span>
-                                      </div>
-                                    </button>
-
-                                    <!-- Start -->
+                                    <!-- Start/Modify -->
                                     <button type="button"
                                             (click)="toggleEdit('start-modify')"
                                             [class.hidden]="isEditMode()"
                                             class="form-btn-primary mb-3 p-3">
                                       <div class="flex items-center justify-center">
-                                        <fa-icon [icon]="icon.faPenToSquare" class="fa-lg me-1"></fa-icon>
+                                        <fa-icon [icon]="icon.faPenToSquare" 
+                                                  class="fa-lg me-1"></fa-icon>
                                         <span class="truncate capitalize-first">
                                           @if (isFormGroupInvalid()) {
                                             {{ lang.data['solution_start'] || 'solution_start' }}
@@ -302,6 +294,37 @@
                     </li>
                   }
                 </ul>
+
+                <!-- Buttons -->
+                <div class="text-center mb-3">
+
+                  <!-- Submit -->
+                  <button type="submit"
+                          [disabled]="isEditMode() || isAllFormGroupInvalid()"
+                          class="form-btn-primary mb-3 p-3">
+                    <div class="flex items-center justify-center">
+                      <fa-icon [icon]="icon.faPaperPlane" 
+                                class="fa-lg me-1"></fa-icon>
+                      <span class="truncate capitalize-first">
+                        {{ lang.data['send'] || 'send' }}
+                      </span>
+                    </div>
+                  </button>
+
+                  <!-- Cancel -->
+                  <button type="button"
+                          (click)="onCancel()"
+                          [disabled]="isEditMode()"
+                          class="form-btn-secondary">
+                    <div class="flex items-center justify-center">
+                      <fa-icon [icon]="icon.faCircleXmark" 
+                                class="fa-lg me-1"></fa-icon>
+                      <span class="capitalize">
+                        {{ lang.data['cancel'] || 'cancel' }}
+                      </span>
+                    </div>
+                  </button>
+                </div>
               </div>
             }
           </div>
