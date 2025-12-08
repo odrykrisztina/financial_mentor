@@ -9,7 +9,7 @@ type Attacment = {
   type          : string;
   file_path?    : string;
   url?          : string;
-  isPortrait?   : boolean;
+  is_portrait?  : boolean;
 }
 type Task = {
   title         : string;

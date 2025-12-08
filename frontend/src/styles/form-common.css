@@ -64,15 +64,18 @@
            border-gray-300 dark:border-gray-600;
   }
   .forms-enabled .form-btn-primary {
-    @apply px-4 py-2 mx-2 mb-3 text-sm rounded-md text-white
-           bg-green-700 hover:bg-green-800 disabled:opacity-50
-           cursor-pointer disabled:cursor-auto shadow min-w-[160px];
+    @apply p-3 mx-2 mb-3 text-sm rounded-md text-white
+           bg-green-700 hover:bg-green-800 
+           cursor-pointer shadow min-w-[160px]
+           disabled:opacity-50 disabled:cursor-auto;
   }
   .forms-enabled .form-btn-secondary {
-    @apply px-4 py-2 mx-2 mb-3 text-sm rounded-md border content-center
+    @apply p-3 mx-2 mb-3 text-sm rounded-md 
+           border content-center
            border-gray-300 dark:border-gray-600
            hover:bg-gray-100 dark:hover:bg-gray-800
-           cursor-pointer shadow min-w-[160px];
+           cursor-pointer shadow min-w-[160px]
+           disabled:opacity-40 disabled:cursor-auto;
   }
   .forms-enabled .form-btn-link {
     @apply block px-4 py-2 cursor-pointer

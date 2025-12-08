@@ -80,8 +80,8 @@
                                      onloadstart="this.volume=0.5"
                                      class="w-full rounded-2xl shadow-lg 
                                             border border-slate-700/40 object-cover"
-                                     [ngClass]="{'aspect-[9/16]': att.isPortrait, 
-                                                 'aspect-video': !att.isPortrait }"
+                                     [ngClass]="{'aspect-[9/16]': att.is_portrait, 
+                                                 'aspect-video': !att.is_portrait }"
                                      [src]="att.file_path ? att.file_path : att.url"
                                      muted
                                      controls
@@ -146,9 +146,15 @@
                                   {{ $index + 1 }}. {{ task.title }}
                                 </span>
                                 @if (task.is_required) {
-                                  <span class="text-xs text-rose-500 whitespace-nowrap">
+                                  <span class="text-xs ms-2 text-rose-500 
+                                               whitespace-nowrap">
                                     {{ lang.data['required'] || 'required' }}
                                   </span>
+                                }
+                                @if (isTaskCompleted($index)) {
+                                  <fa-icon [icon]="icon.faCheck"
+                                            class="fa-xl ms-3 text-emerald-500">
+                                  </fa-icon>
                                 }
                               </div>
                               <span class="ms-1 inline-block transition-transform"
@@ -182,7 +188,6 @@
 
                                 <form #reactiveForm
                                       [formGroup]="formGroup"
-                                      (ngSubmit)="confirm()"
                                       class="w-full p-0"
                                       novalidate>
 
@@ -190,11 +195,12 @@
                                   <div class="mb-5">
                                     <div class="flex flex-col items-start mb-1">
                                       <label for="solution" 
-                                            class="form-label mb-2"
+                                            class="form-label mb-2 w-full"
                                             [class.form-label-disabled]="!isEditMode()">
                                         <div class="flex items-center justify-start">
                                           <fa-icon [icon]="icon.faStar" 
-                                                    class="me-1 text-red-500 text-[6px]"></fa-icon>
+                                                    class="me-1 text-red-500 text-[6px]">
+                                          </fa-icon>
                                           <fa-icon [icon]="icon.faSquarePollHorizontal" 
                                                     class="me-1 fa-xl"></fa-icon>
                                           <span class="truncate capitalize-first text-lg">
@@ -203,9 +209,13 @@
                                         </div>
                                       
                                         @if (task.min_length && task.min_length > 0) {
-                                          <div class="flex flex-row pt-1">
+                                          <div class="flex flex-row pt-1 justify-between w-full">
                                             <div class="text-[11px] truncate capitalize-first">
                                               {{ lang.data['solution_min_length'] }}: 
+                                              {{ task.min_length }}
+                                            </div>
+                                            <div class="text-[11px] text-right pe-2">
+                                              {{ currentSolutionLength }} / 
                                               {{ task.min_length }}
                                             </div>
                                           </div>
@@ -241,12 +251,12 @@
                                     <button type="button"
                                             (click)="toggleEdit('start-modify')"
                                             [class.hidden]="isEditMode()"
-                                            class="form-btn-primary mb-3 p-3">
+                                            class="form-btn-primary">
                                       <div class="flex items-center justify-center">
                                         <fa-icon [icon]="icon.faPenToSquare" 
                                                   class="fa-lg me-1"></fa-icon>
                                         <span class="truncate capitalize-first">
-                                          @if (isFormGroupInvalid()) {
+                                          @if (!(f.solution.value || '').trim()) {
                                             {{ lang.data['solution_start'] || 'solution_start' }}
                                           } @else {
                                             {{ lang.data['modify'] || 'modify' }}
@@ -260,7 +270,7 @@
                                             (click)="toggleEdit('completed')"
                                             [disabled]="formGroup.invalid"
                                             [class.hidden]="!isEditMode()"
-                                            class="form-btn-primary mb-3 p-3">
+                                            class="form-btn-primary">
                                       <div class="flex items-center justify-center">
                                         <fa-icon [icon]="icon.faCheck" 
                                                   class="fa-lg me-1"></fa-icon>
@@ -272,7 +282,7 @@
 
                                     <!-- Interrup -->
                                     <button type="button"
-                                            class="form-btn-secondary mb-3 p-3"
+                                            class="form-btn-secondary"
                                             (click)="toggleEdit('interrupt')"
                                             [class.hidden]="!isEditMode()">
                                       <div class="flex items-center justify-center">
@@ -299,9 +309,11 @@
                 <div class="text-center mb-3">
 
                   <!-- Submit -->
-                  <button type="submit"
-                          [disabled]="isEditMode() || isAllFormGroupInvalid()"
-                          class="form-btn-primary mb-3 p-3">
+                  <button type="button"
+                          [disabled]="isEditMode() || 
+                                      !allTasksCompleted()"
+                          (click)="confirm()"
+                          class="form-btn-primary">
                     <div class="flex items-center justify-center">
                       <fa-icon [icon]="icon.faPaperPlane" 
                                 class="fa-lg me-1"></fa-icon>

@@ -6,7 +6,8 @@ import {
   ViewChild, 
   ElementRef,
   ViewChildren,
-  QueryList
+  QueryList,
+  computed 
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NavigationService } from '../../shared/nav/navigation.service';            
@@ -43,6 +44,14 @@ type FormControls = {
 };
 
 type TaskKey = string;
+
+type LessonTask = {
+  title        : string;
+  type         : string;
+  description? : string;
+  is_required? : boolean;
+  min_length?  : number | null;
+};
 
 @Component({
   selector: 'app-elearning',
@@ -81,8 +90,26 @@ export class Elearning implements AfterViewInit {
   selectedItem  = signal<SidebarItem | null>(null);
   isEditMode = signal<boolean>(false);
   isFormGroupInvalid = signal<boolean>(true);
-  isAllFormGroupInvalid = signal<boolean>(true);
   error = signal<string | null>(null);
+
+  allTasksCompleted = computed(() => {
+
+    const lesson = this.selectedItem();
+    if (!lesson || !lesson.tasks?.length) return false;
+
+    const map = this.taskSolutions();
+
+    return lesson.tasks.every((task: any, index: number) => {
+      if (task.type !== 'input-text') return true;
+
+      const key    = this.buildTaskKey(lesson, index)!;
+      const text   = (map[key] ?? '').trim();
+      const minLen = task.min_length ?? 0;
+      const req    = !!task.is_required;
+
+      return !req || text.length >= minLen;
+    });
+  });
   
   @ViewChild('reactiveForm', { static: false })
   formElement!: ElementRef<HTMLFormElement>;
@@ -119,16 +146,21 @@ export class Elearning implements AfterViewInit {
       mode: 'overlay',
       open: false,
     });
+
+    const financeMenu2 = this.attachItemCallbacks(
+      this.getTemporaryFinanceCourses(),
+      'software'
+    );
+    this.sidebar.setMenu('right', financeMenu2, {
+      mode: 'overlay',
+      open: false,
+    });
   }
 
   ngAfterViewInit() {
     queueMicrotask(() => {
       setTimeout(() => this.mounted.set(true), 100);
     });
-  }
-
-  toggle(position: SidebarPosition) {
-    this.sidebar.toggle(position);
   }
 
   openItem(
@@ -143,8 +175,10 @@ export class Elearning implements AfterViewInit {
     this.isEditMode.set(false);
     this.isFormGroupInvalid.set(this.formGroup.invalid);
 
+    this.updateValidatorsForTask(null);
+
     setTimeout(() => {
-      window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+      window.scrollTo({ top:0, left:0, behavior:'smooth' });
     }, 300);
   }
 
@@ -170,6 +204,38 @@ export class Elearning implements AfterViewInit {
     this.taskSolutions.set(map);
   }
 
+  private getTasksOfLesson(lesson: SidebarItem | null): LessonTask[] {
+    return (lesson?.tasks ?? []) as LessonTask[];
+  }
+
+  private getTaskAt(
+    lesson: SidebarItem | null,
+    index: number | null
+  ): LessonTask | null {
+    if (!lesson || index === null || index < 0) return null;
+    const tasks = this.getTasksOfLesson(lesson);
+    return tasks[index] ?? null;
+  }
+
+  private updateValidatorsForTask(index: number | null): void {
+    const control = this.formGroup.controls.solution;
+    const lesson  = this.selectedItem();
+    const task    = this.getTaskAt(lesson, index);
+
+    const validators = [];
+
+    if (task?.is_required) {
+      validators.push(Validators.required);
+    }
+
+    if (task?.min_length && task.min_length > 0) {
+      validators.push(Validators.minLength(task.min_length));
+    }
+
+    control.setValidators(validators);
+    control.updateValueAndValidity({ emitEvent: false });
+  }
+
   private loadSolutionForTask(index: number | null): void {
     const lesson = this.selectedItem();
     const key    = this.buildTaskKey(lesson, index);
@@ -183,27 +249,58 @@ export class Elearning implements AfterViewInit {
   }
 
   toggleTask(index: number) {
-    
+
     if (this.isEditMode()) return; 
 
     const current = this.openTaskIndex();
 
-    // Jlenlegi nyitott feladat megoldásának mentése
     if (current !== null) {
       this.saveCurrentSolution();
     }
 
-    // Új index
     const newIndex = current === index ? null : index;
     this.openTaskIndex.set(newIndex);
 
-    // Új feladat megoldásának betöltése
+    this.updateValidatorsForTask(newIndex);
+
     this.loadSolutionForTask(newIndex);
 
-    // Scroll az adott feladatra
     if (newIndex !== null) {
       setTimeout(() => this.scrollToTask(newIndex), 0);
     }
+  }
+
+  isTaskCompleted(index: number): boolean {
+
+    const lesson = this.selectedItem();
+    const task   = this.getTaskAt(lesson, index);
+    if (!lesson || !task) return false;
+
+    if (task.type !== 'input-text') return true;
+
+    const key   = this.buildTaskKey(lesson, index);
+    if (!key) return false;
+
+    const value = this.taskSolutions()[key] ?? '';
+    return this.isTaskValueValid(task, value);
+  }
+
+  private isTaskValueValid(
+
+    task: LessonTask, 
+    value: string | null | undefined): boolean {
+
+    const text = (value ?? '').trim();
+
+    if (task.is_required && !text) {
+      return false;
+    }
+
+    if (task.min_length && task.min_length > 0) {
+      return text.length >= task.min_length;
+    }
+
+    return true;
   }
 
   clear(field: keyof FormControls, value: string = ''): void {
@@ -212,33 +309,77 @@ export class Elearning implements AfterViewInit {
   }
 
   async onSubmit() {
-  
-    if (this.formGroup.invalid) {
-      this.forms.setFocus(this.formGroup, this.formElement);
+
+    // Aktuális feladat mentése, ha nyitva van
+    if (this.openTaskIndex() !== null) {
+      this.saveCurrentSolution();
+    }
+
+    // Minden kötelező feladat kész-e
+    if (!this.allTasksCompleted()) {
+      this.modal.error('not_all_tasks_valid');
       return;
     }
-    
+
+    // Payload logolása
+    const payload = this.buildSubmissionPayload();
+    console.log('E-learning - beküldött megoldások:', payload);
+
+    // User ellenőrzése
     const currentUser = this.auth.getUser();
     if (!currentUser || !currentUser.id) {
       this.error.set('user_not_authenticated');
       this.modal.error('user_not_authenticated');
       return;
     }
-    
-    const startTime = new Date().getTime();
+
     this.modal.loading('data_authentication');
     this.error.set(null);
-    
+
     setTimeout(() => {
       this.modal.close();
       this.modal.info('under_development');
     }, 1000);
   }
 
+  private buildSubmissionPayload() {
+
+    const lesson = this.selectedItem();
+    if (!lesson || !lesson.tasks?.length) {
+      return null;
+    }
+
+    const lessonId    = lesson.id ?? 'no-id';
+    const lessonTitle = lesson.title;
+    const map         = this.taskSolutions();
+
+    const tasks = lesson.tasks.map((task: any, index: number) => {
+      const key       = this.buildTaskKey(lesson, index)!;
+      const solution  = (map[key] ?? '').trim();
+      const minLen    = task.min_length ?? 0;
+      const required  = !!task.is_required;
+      const length    = solution.length;
+      const isValid   = !required || length >= minLen;
+
+      return {
+        index,
+        title      : task.title,
+        required,
+        minLength  : minLen,
+        length,
+        isValid,
+        solution,
+      };
+    });
+
+    return { lessonId, lessonTitle, tasks };
+  }
+
   onCancel() { 
     this.modal.confirm('exit_confirm', { 
       onYes: () => {
         this.selectedItem.set(null);
+        this.sidebar.clearSelectedItem();
       } 
     }); 
   }
@@ -250,6 +391,7 @@ export class Elearning implements AfterViewInit {
   }
 
   toggleEdit(type: string) {
+    
     const isNowEdit = !this.isEditMode();
     this.isFormGroupInvalid.set(this.formGroup.invalid);
 
@@ -263,7 +405,8 @@ export class Elearning implements AfterViewInit {
       case 'completed':
         this.formGroup.disable();
         this.isEditMode.set(isNowEdit);
-        this.saveCurrentSolution();  
+        this.saveCurrentSolution();
+        this.openTaskIndex.set(null);   
         break;
 
       case 'interrupt':
@@ -282,6 +425,7 @@ export class Elearning implements AfterViewInit {
   }
 
   private scrollToTask(index: number): void {
+
     if (!this.taskItems) return;
 
     const items = this.taskItems.toArray();
@@ -300,6 +444,7 @@ export class Elearning implements AfterViewInit {
   }
   
   private attachItemCallbacks(
+
     items: SidebarItem[],
     source: 'finance' | 'software'
   ): SidebarItem[] {
@@ -327,7 +472,13 @@ export class Elearning implements AfterViewInit {
     });
   }
 
+  get currentSolutionLength(): number {
+    const val = this.formGroup.getRawValue().solution ?? '';
+    return val.trim().length;
+  }
+
   getAuthorOfQuote(): string {
+
     const name: UserName = {
       first_name: "Sarah",
       last_name: "Caldwell"
@@ -336,6 +487,7 @@ export class Elearning implements AfterViewInit {
   }
 
   onVideoPlay(video: HTMLVideoElement) {
+
     if (this.currentVideo && this.currentVideo !== video) {
       this.currentVideo.pause();
       if (this.isResetVideo)
@@ -393,7 +545,7 @@ export class Elearning implements AfterViewInit {
                                 terheik közé tartozik egy 110 000 Ft havi törlesztésű lakáshitel, egy 600 000
                                 Ft-os hitelkártyakeret, valamint egy 1 000 000 Ft-os folyószámla-hitelkeret.`,
                 is_required : true,
-                min_length  : 200
+                min_length  : 50
               },
               { title       :  'Feladat',
                 type        :  'input-text',
@@ -401,7 +553,7 @@ export class Elearning implements AfterViewInit {
                                 ügyfelek számára, és melyik munkamódszerünk az, amit szerinted a legjobban
                                 érdemes hangsúlyozni egy ügyféltárgyaláson?`,
                 is_required : true,
-                min_length  : 200
+                min_length  : 100
               }
             ]
           },
@@ -432,7 +584,7 @@ export class Elearning implements AfterViewInit {
               { title     : 'Hitelezési alapoktatás',
                 type      : 'video/mp4',
                 file_path : 'assets/media/video/szeremy_dani.mp4',
-                isPortrait: true,
+                is_portrait: true,
               }
             ],
             tasks: [
@@ -454,7 +606,7 @@ export class Elearning implements AfterViewInit {
               { title     : 'Nyugdíjtervezés',
                 type      : 'video/mp4',
                 file_path : 'assets/media/video/kiss_bence_befektetes.mp4',
-                isPortrait: true,
+                is_portrait: true,
               }
             ],
             tasks: [
@@ -484,12 +636,12 @@ export class Elearning implements AfterViewInit {
               { title     : 'LEAD feldolgozása 1',
                 type      : 'video/mp4',
                 file_path : 'assets/media/video/odry_kriszti_vizilabda.mp4',
-                isPortrait: true,
+                is_portrait: true,
               },
               { title     : 'LEAD feldolgozása 2',
                 type      : 'video/mp4',
                 file_path : 'assets/media/video/imre_adam.mp4',
-                isPortrait: true,
+                is_portrait: true,
               }
             ],
             tasks: [
