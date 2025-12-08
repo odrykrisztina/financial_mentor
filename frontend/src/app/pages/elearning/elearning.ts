@@ -153,6 +153,32 @@ export class Elearning implements AfterViewInit {
     return `${lessonId}::${taskIndex}`;
   }
 
+  private saveCurrentSolution(): void {
+    const lesson = this.selectedItem();
+    const idx    = this.openTaskIndex();
+    const key    = this.buildTaskKey(lesson, idx);
+
+    if (!key) return;
+
+    const value = this.formGroup.getRawValue().solution ?? '';
+    const map   = { ...this.taskSolutions() };
+
+    map[key] = value;
+    this.taskSolutions.set(map);
+  }
+
+  private loadSolutionForTask(index: number | null): void {
+    const lesson = this.selectedItem();
+    const key    = this.buildTaskKey(lesson, index);
+
+    const stored = key ? this.taskSolutions()[key] ?? '' : '';
+
+    this.formGroup.reset({ solution: stored });
+    this.formGroup.disable();
+    this.isEditMode.set(false);
+    this.isFormGroupInvalid.set(this.formGroup.invalid);
+  }
+
   toggleTask(index: number) {
     if (this.isEditMode()) return;
     const current = this.openTaskIndex();
