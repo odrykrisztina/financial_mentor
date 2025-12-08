@@ -89,7 +89,7 @@ export class Elearning implements AfterViewInit {
 
   @ViewChildren('taskItem')
   private taskItems!: QueryList<ElementRef<HTMLElement>>;
-  
+
   constructor(
     private fb: NonNullableFormBuilder,
     public  langSvc: LangService,
@@ -143,6 +143,14 @@ export class Elearning implements AfterViewInit {
     setTimeout(() => {
       window.scrollTo({top:0, left:0, behavior:'smooth'});
     }, 300);
+  }
+
+  private buildTaskKey(
+    lesson: SidebarItem | null, 
+    taskIndex: number | null): TaskKey | null {
+    if (!lesson || taskIndex === null || taskIndex < 0) return null;
+    const lessonId = lesson.id ?? 'no-id';
+    return `${lessonId}::${taskIndex}`;
   }
 
   toggleTask(index: number) {
