@@ -5,6 +5,8 @@ import {
   inject,
   ViewChild, 
   ElementRef,
+  ViewChildren,
+  QueryList
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NavigationService } from '../../shared/nav/navigation.service';            
@@ -40,6 +42,8 @@ type FormControls = {
   solution: FormControl<string>;
 };
 
+type TaskKey = string;
+
 @Component({
   selector: 'app-elearning',
   standalone: true,                                          
@@ -72,6 +76,7 @@ export class Elearning implements AfterViewInit {
 
   mounted = signal(false);
   openTaskIndex = signal<number | null>(null);
+  private taskSolutions = signal<Record<TaskKey, string>>({});
 
   selectedItem  = signal<SidebarItem | null>(null);
   isEditMode = signal<boolean>(false);
