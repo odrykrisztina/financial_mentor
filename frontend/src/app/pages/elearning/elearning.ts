@@ -87,6 +87,9 @@ export class Elearning implements AfterViewInit {
   formElement!: ElementRef<HTMLFormElement>;
   formGroup!: FormGroup<FormControls>;
 
+  @ViewChildren('taskItem')
+  private taskItems!: QueryList<ElementRef<HTMLElement>>;
+  
   constructor(
     private fb: NonNullableFormBuilder,
     public  langSvc: LangService,
