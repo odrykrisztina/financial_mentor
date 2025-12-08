@@ -130,18 +130,36 @@ export class Elearning implements AfterViewInit {
     this.sidebar.toggle(position);
   }
 
+  // openItem(
+  //   source: 'finance' | 'software',
+  //   item: SidebarItem
+  // ) {
+  //   this.selectedItem.set(item);
+  //   this.openTaskIndex.set(null);
+    
+  //   this.formGroup.reset({ solution: '' });
+  //   this.formGroup.disable();
+  //   this.isEditMode.set(false);
+  //   setTimeout(() => {
+  //     window.scrollTo({top:0, left:0, behavior:'smooth'});
+  //   }, 300);
+  // }
+
   openItem(
     source: 'finance' | 'software',
     item: SidebarItem
   ) {
     this.selectedItem.set(item);
     this.openTaskIndex.set(null);
-    
+
+    // Aktuális form teljes tisztítása (új lecke)
     this.formGroup.reset({ solution: '' });
     this.formGroup.disable();
     this.isEditMode.set(false);
+    this.isFormGroupInvalid.set(this.formGroup.invalid);
+
     setTimeout(() => {
-      window.scrollTo({top:0, left:0, behavior:'smooth'});
+      window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
     }, 300);
   }
 
@@ -179,15 +197,40 @@ export class Elearning implements AfterViewInit {
     this.isFormGroupInvalid.set(this.formGroup.invalid);
   }
 
+  // toggleTask(index: number) {
+  //   if (this.isEditMode()) return;
+  //   const current = this.openTaskIndex();
+  //   this.openTaskIndex.set(current === index ? null : index);
+  //   this.formGroup.reset({ solution: '' });
+  //   this.formGroup.disable();
+  //   this.isEditMode.set(false);
+  // }
+
   toggleTask(index: number) {
-    if (this.isEditMode()) return;
+    
+    if (this.isEditMode()) return;   // szerkesztés közben ne váltsunk feladatot
+
     const current = this.openTaskIndex();
-    this.openTaskIndex.set(current === index ? null : index);
-    this.formGroup.reset({ solution: '' });
-    this.formGroup.disable();
-    this.isEditMode.set(false);
+
+    // 1) jelenlegi nyitott feladat megoldásának mentése
+    if (current !== null) {
+      this.saveCurrentSolution();
+    }
+
+    // 2) új index
+    const newIndex = current === index ? null : index;
+    this.openTaskIndex.set(newIndex);
+
+    // 3) új feladat megoldásának betöltése
+    this.loadSolutionForTask(newIndex);
+
+    // 4) scroll az adott feladatra (ha nyitva van)
+    if (newIndex !== null) {
+      setTimeout(() => this.scrollToTask(newIndex), 0);
+    }
   }
 
+  
   clear(field: keyof FormControls, value: string = ''): void {
     const controlName: keyof FormControls & string = (field as any);
     this.forms.clearControl(this.formGroup, controlName, this.formElement, value);
@@ -223,30 +266,81 @@ export class Elearning implements AfterViewInit {
     });
   }
 
+  // toggleEdit(type: string) {
+  //   const isNowEdit = !this.isEditMode();
+  //   this.isFormGroupInvalid.set(this.formGroup.invalid);
+  //   switch(type) {
+  //     case 'start-modify':
+  //       this.formGroup.enable();
+  //       this.isEditMode.set(isNowEdit);
+  //       this.forms.setFocus(this.formGroup, this.formElement)
+  //       break;
+  //     case 'completed':
+  //       this.formGroup.disable();
+  //       this.isEditMode.set(isNowEdit);
+  //       break;
+  //     case 'interrupt':
+  //       this.modal.confirm('solution_interrupt', { 
+  //         onYes: () => {
+  //           this.formGroup.disable();
+  //           this.isEditMode.set(isNowEdit);
+  //         },
+  //         onNo: () => { this.forms.setFocus(this.formGroup, this.formElement) }
+  //       });
+  //   }
+  // }
+
   toggleEdit(type: string) {
     const isNowEdit = !this.isEditMode();
     this.isFormGroupInvalid.set(this.formGroup.invalid);
+
     switch(type) {
       case 'start-modify':
         this.formGroup.enable();
         this.isEditMode.set(isNowEdit);
-        this.forms.setFocus(this.formGroup, this.formElement)
+        this.forms.setFocus(this.formGroup, this.formElement);
         break;
+
       case 'completed':
         this.formGroup.disable();
         this.isEditMode.set(isNowEdit);
+        this.saveCurrentSolution();         // ⬅︎ ÚJ
         break;
+
       case 'interrupt':
         this.modal.confirm('solution_interrupt', { 
           onYes: () => {
             this.formGroup.disable();
             this.isEditMode.set(isNowEdit);
+            this.saveCurrentSolution();     // ⬅︎ ÚJ
           },
-          onNo: () => { this.forms.setFocus(this.formGroup, this.formElement) }
+          onNo: () => { 
+            this.forms.setFocus(this.formGroup, this.formElement);
+          }
         });
+        break;
     }
   }
 
+  private scrollToTask(index: number): void {
+    if (!this.taskItems) return;
+
+    const items = this.taskItems.toArray();
+    const el    = items[index]?.nativeElement;
+    if (!el) return;
+
+    const rect        = el.getBoundingClientRect();
+    const scrollTop   = window.scrollY || window.pageYOffset;
+    const offsetTop   = rect.top + scrollTop - (this.headerHeight + 16); 
+    // +16px kis „lélegző” tér a header alá
+
+    window.scrollTo({
+      top: offsetTop,
+      left: 0,
+      behavior: 'smooth'
+    });
+  }
+  
   private attachItemCallbacks(
     items: SidebarItem[],
     source: 'finance' | 'software'
