@@ -30,4 +30,16 @@ class TypeController extends Controller
             'data' => $rows,
         ]);
     }
+
+    public function contractTypes(): JsonResponse
+    {
+        $rows = Type::query()
+            ->where('type', 'CONTRACT')
+            ->select(['id as status_id', 'name_id'])
+            ->get();
+
+        return response()->json([
+            'data' => $rows,
+        ]);
+    }
 }

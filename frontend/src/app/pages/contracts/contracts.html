@@ -6,14 +6,15 @@
          [style.transform]="mounted() ? 'scale(1)' : 'scale(0)'">
 
       <!-- Panel 1 -->
-      <div class="h-[36vh] sm:h-[40vh] w-[91vw] flex flex-col shadow-sm
+      <div class="h-[42vh] sm:h-[46vh] w-[91vw] flex flex-col shadow-sm
                   border border-gray-300 dark:border-gray-600">
 
         <!-- Panel header -->
         <div class="flex-none border-b text-lg
                     border-gray-300 dark:border-gray-600">
-          <div class="px-4 py-1"
-               [ngClass]="{'bg-green-800 text-white': isActive()}">
+          <div class="px-4 py-1 text-white"
+               [ngClass]="{'bg-green-800': isActive(),
+                           'bg-gray-800': !isActive()}">
             <div class="flex items-center justify-between gap-2">
 
               <!-- Title -->
@@ -190,14 +191,15 @@
       </div>
       
       <!-- Panel 2 -->
-      <div class="h-[36vh] sm:h-[40vh] w-[91vw] flex flex-col shadow-sm
+      <div class="h-[30vh] sm:h-[34vh] w-[91vw] flex flex-col shadow-sm
                   border border-gray-300 dark:border-gray-600">
 
         <!-- Panel header -->
         <div class="flex-none border-b text-lg
                     border-gray-300 dark:border-gray-600">
-          <div class="px-4 py-1"
-               [ngClass]="{'bg-green-800 text-white': false}">
+          <div class="px-4 py-1 text-white"
+               [ngClass]="{'bg-green-800': false,
+                           'bg-gray-700': true}">
             <div class="flex items-center justify-between gap-2">
 
               <!-- Title -->

@@ -40,6 +40,7 @@ Route::prefix('v1')->group(function () {
     Route::post('auth/password-change', [AuthController::class, 'changePassword']);
 
     Route::get('/types/message-statuses', [TypeController::class, 'messageStatuses']);
+    Route::get('/types/contract-types', [TypeController::class, 'contractTypes']);
 
     // Üzenetek
     Route::get('/messages', [MessageController::class, 'index']);

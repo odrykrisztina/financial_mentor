@@ -334,6 +334,7 @@ export class Contracts implements OnInit {
 
       this.users.set(usersRes?.data ?? []);
       this.types.set(typesRes?.data ?? []);
+      console.log(this.types());
       this.financialInstitutions.set(financialInstitutionsRes?.data ?? []);
 
     } catch (e) {
