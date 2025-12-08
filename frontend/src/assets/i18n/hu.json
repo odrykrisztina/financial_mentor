@@ -298,5 +298,6 @@
   "solution_min_length": "a megoldás minimális hossza",
   "completed": "befejezve",
   "interrupt": "megszakítja",
-  "modify": "módosít"
+  "modify": "módosít",
+  "empty": "üres"
 }

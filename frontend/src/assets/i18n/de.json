@@ -298,5 +298,6 @@
   "solution_min_length": "die mindestlänge der lösung beträgt",
   "completed": "vollendet",
   "interrupt": "unterbrechen",
-  "modify": "ändern"
+  "modify": "ändern",
+  "empty": "leer"
 }

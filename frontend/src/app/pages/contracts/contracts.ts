@@ -4,10 +4,10 @@ import {
   ViewChild,  
   inject, 
   signal, 
-  OnDestroy, 
   effect,
   HostListener,
-  computed
+  computed,
+  OnInit
 } from '@angular/core';
 import { CommonModule } from '@angular/common';              
 import { LangService, UserName } from '../../core/lang.service';
@@ -25,7 +25,7 @@ import {
   faEnvelopesBulk, faKey, faFileSignature,
   faEnvelope, faCommentDots, faChevronDown, 
   faCircleExclamation, faPaperPlane, faFlag,
-  IconDefinition
+  IconDefinition, faPaperclip
 } from '@fortawesome/free-solid-svg-icons';
 import {
   ReactiveFormsModule,
@@ -42,26 +42,82 @@ import { env } from '../../core/env';
 import { ModalService } from '../../shared/modal/modal.service';
 import { firstValueFrom } from 'rxjs';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Router } from '@angular/router';
 import { UtilityService } from '../../shared/util/utility.service';
 
-type ContractsDto = {
+type Table = {
+  name: string;
+  nameKey: string;
+  icon?: IconDefinition;
+};
+
+type ContractDto = {
   id              : number  | null;
-  status_id       : string  | null;
-  status_name_id  : string  | null;
-  prefix_name     : string  | null;
-  first_name      : string  | null;
-  middle_name     : string  | null;
-  last_name       : string  | null;
-  postfix_name    : string  | null;
-  gender          : 'M'|'F' | null;
-  email           : string  | null;
-  phone           : string  | null;
-  img             : string  | null;
-  worker_id       : number  | null;
-  subject_name_id : string  | null;
-  message         : string  | null;
+  contract_no     : string  | null;
+  type            : string  | null;
+                                      // join types ON
+                                      // contracts.type = types.id AND                                       
+                                      // types.type = 'CONTRACT'
+
+  type_name_id    : string  | null;   // types.name_id
+
+  award           : number  | null;
+  currency        : string  | null;
+  start_at        : string  | null; 
+  description     : string  | null;
   created_at      : string  | null;
+  updated_at      : string  | null;
+
+  user_id         : string  | null;
+                                      // join users ON   
+                                      // contracts.user_id = users.id
+                                      
+  prefix_name     : string  | null;   // users.prefix_name
+  first_name      : string  | null;   // users.first_name
+  middle_name     : string  | null;   // users.middle_name
+  last_name       : string  | null;   // users.last_name
+  postfix_name    : string  | null;   // users.postfix_name
+  gender          : 'M'|'F' | null;   // users.gender
+  img             : string  | null;   // users.img
+                                 
+  worker_id       : string  | null;   
+                                      // join workers, join users as users2 ON
+                                      // contracts.worker_id = workers.id AND
+                                      // workers.user_id = users2.id
+
+  w_prefix_name   : string  | null;   // users2.prefix_name
+  w_first_name    : string  | null;   // users2.first_name
+  w_middle_name   : string  | null;   // users2.middle_name
+  w_last_name     : string  | null;   // users2.last_name
+  w_postfix_name  : string  | null;   // users2.postfix_name
+  w_gender        : 'M'|'F' | null;   // users2.gender
+  w_img           : string  | null;   // users2.img
+
+  f_i_id          : number  | null;   
+                                      // join financial_institutions ON
+                                      // contracts.financial_institutions.id = 
+                                      // financial_institutions.id
+
+  f_i_name        : string  | null;   // financial_institutions.name
+  f_i_img         : string  | null;   // financial_institutions.img  
+};
+
+type ContractAttachmentDto = {
+  id              : number  | null;
+  type            : string  | null;
+                                      // join types ON
+                                      // contract_attachments.type = types.id AND                                       
+                                      // types.type = 'ATTACHMENT'
+
+  type_name_id    : string  | null;   // types.name_id
+
+  file_name       : string  | null;
+  file_path       : string  | null;
+  file_url        : string  | null;
+  file            : string  | null;
+  file_type       : string  | null;
+  description     : string  | null;
+  created_at      : string  | null;
+  updated_at      : string  | null;  
 };
 
 type Command = {
@@ -72,41 +128,67 @@ type Command = {
 }
 
 type NameKey    = 'prefix'|'first'|'middle'|'last'|'postfix';
-type ColumnKey  = 'name' | 'status_name_id' | 'subject_name_id' | 
-                  'message' | 'created_at';
-type Column = {
-  key: ColumnKey;
+
+
+type ColumnContractKey  = 'contract_no' | 'name'  | 'type_name_id' |
+                          'f_i_name' | 'f_i_img'  | 'award' | 
+                          'currency' | 'start_at' | 'description';
+type ColumnContract = {
+  key: ColumnContractKey;
   labelKey: string;
 };
 
-interface Colleague {
-  worker_id: number;
+
+type ColumnContractAttachmentKey  = 'type_name_id' | 'file_name' | 
+                                    'file_type' | 'description';
+type ColumnContractAttachment = {
+  key: ColumnContractAttachmentKey;
+  labelKey: string;
+};
+
+interface User {
+  user_id: number;
   prefix_name: string | null;
   first_name: string;
   middle_name: string | null;
   last_name: string;
   postfix_name: string | null;
 }
-type SimpleColleaguesResponse = {
-  data: Colleague[];
+type SimpleUsersResponse = {
+  data: User[];
 };
 
-interface Status {
-  status_id: string;
-  name_id: string;
+interface ContractType {
+  id      : string;
+  name_id : string;
 }
-type StatusesResponse = {
-  data: Status[];
+type ContractTypesResponse = {
+  data: ContractType[];
 };
 
-type FormControls = {
-  worker_id:  FormControl<number>;
-  status_id: FormControl<string>;
+interface FinancialInstitution {
+  id  : number;
+  name: string | null;
+  img : string | null;
+}
+type FinancialInstitutionsResponse = {
+  data: FinancialInstitution[];
 };
 
 type ContractResponse = {
   success: boolean;
-  contractKey: string;
+  messageKey: string;
+  data: ContractDto[];
+};
+
+type ContractAttachmentResponse = {
+  success: boolean;
+  messageKey: string;
+  data: ContractAttachmentDto[];
+};
+
+type FormControls = {
+  id: FormControl<number>;
 };
 
 @Component({
@@ -120,55 +202,78 @@ type ContractResponse = {
   templateUrl: './contracts.html',
   styleUrl: './contracts.css',
 })
-export class Contracts implements OnDestroy {
+export class Contracts implements OnInit {
 
   private auth  = inject(AuthService);
   private modal = inject(ModalService);
 
-  mounted     = signal(false);
-  isWorker    = signal<boolean>(false);
-  contracts   = signal<ContractsDto[]>([]);
-  rowPointer  = signal<number>(-1);
-  isPageMode  = signal<boolean>(false);
-  isEditMode  = signal<boolean>(false);
-  error       = signal<string | null>(null);
-  private colleagues = signal<Colleague[]>([]);
-  private statuses = signal<Status[]>([]);
+  tables = signal<Table[]>([
+    { name: 'contracts',    nameKey: 'contracts', icon: faHandshake },
+    { name: 'attachments',  nameKey: 'attachments', icon: faPaperclip }
+  ]); 
+  mounted       = signal(false);
+  isWorker      = signal<boolean>(false);
+  contracts     = signal<ContractDto[]>([]);
+  attachments   = signal<ContractAttachmentDto[]>([]);
+  isPageMode    = signal<boolean>(false);
+  isEditMode    = signal<boolean>(false);
+  error         = signal<string | null>(null);
+  private users = signal<User[]>([]);
+  private types = signal<ContractType[]>([]);
+  private financialInstitutions = signal<FinancialInstitution[]>([]);
 
   @ViewChild('reactiveForm', { static: false })
   formElement!: ElementRef<HTMLFormElement>;
   formGroup!: FormGroup<FormControls>;
-  private readonly maxRanking: number = 4;
 
   readonly icon = { faCircleXmark, faEye, faHandshake,
                     faAngleDown, faAnglesDown, faArrowsDownToLine,
                     faPenToSquare, faCirclePlus, faCircleMinus, 
                     faAngleUp, faAnglesUp, faArrowsUpToLine,
                     faCheck, faXmark, faIdCard, faUser, faStar,
-                    faFloppyDisk, faCalendarDays,
+                    faFloppyDisk, faCalendarDays, faPaperclip,
                     faVenusMars, faMobileScreenButton, faLocationDot,
                     faUpload, faRobot, faArrowsRotate, faCity,
                     faEnvelopesBulk, faKey, faFileSignature,
                     faEnvelope, faCommentDots, faChevronDown, 
                     faCircleExclamation, faPaperPlane, faFlag };
 
-  readonly columns: Column[] = [
-    { key: 'name',            labelKey: 'name' },
-    { key: 'status_name_id',  labelKey: 'status' },
-    { key: 'subject_name_id', labelKey: 'subject' },
-    { key: 'message',         labelKey: 'message' },
-    { key: 'created_at',      labelKey: 'arrived' },
+  readonly contractColumns: ColumnContract[] = [
+    { key: 'contract_no', labelKey: 'contract_no' },      
+    { key: 'name' , labelKey: 'name' }, 
+    { key: 'type_name_id', labelKey: 'type_name_id'},  
+    { key: 'f_i_name', labelKey: 'f_i_name'},  
+    { key: 'f_i_img', labelKey: 'f_i_img'},  
+    { key: 'award' , labelKey: 'award' }, 
+    { key: 'currency' , labelKey: 'currency' }, 
+    { key: 'start_at', labelKey: 'start_at'}, 
+    { key: 'description', labelKey: 'description'},
   ];
 
-  readonly colSpan = this.columns.length;
+  readonly contractColSpan = this.contractColumns.length;
 
-  private readonly REFRESH_INTERVAL = 30_000;
-  private contractsTimerId: any = null;
+  readonly contractAttachmentColumns: ColumnContractAttachment[] = [
+    { key: 'type_name_id', labelKey: 'type_name_id' },      
+    { key: 'file_name' , labelKey: 'file_name' }, 
+    { key: 'file_type', labelKey: 'file_type'},  
+    { key: 'description', labelKey: 'description'},
+  ];
+
+  readonly contractAttachmentColSpan = this.contractAttachmentColumns.length;
+
   private isChangedView: boolean = false;
 
-  selectedRow = computed<ContractsDto | null>(() => {
-    const idx  = this.rowPointer();
+  contractRowPointer = signal<number>(-1);
+  contractSelectedRow = computed<ContractDto | null>(() => {
+    const idx  = this.contractRowPointer();
     const rows = this.contracts();
+    return idx >= 0 && idx < rows.length ? rows[idx] : null;
+  });
+
+  contractAttachmentRowPointer = signal<number>(-1);
+  contractAttachmentSelectedRow = computed<ContractAttachmentDto | null>(() => {
+    const idx  = this.contractAttachmentRowPointer();
+    const rows = this.attachments();
     return idx >= 0 && idx < rows.length ? rows[idx] : null;
   });
 
@@ -178,7 +283,6 @@ export class Contracts implements OnDestroy {
     public langSvc: LangService,
     private http: HttpClient,
     private nav: NavigationService,
-    private router: Router,
     private util: UtilityService,
   ) {
     effect(() => {
@@ -190,18 +294,13 @@ export class Contracts implements OnDestroy {
       this.isWorker.set(worker);
 
       if (loggedIn && worker) {
-        this.startContractsPolling();
-      } else {
-        this.stopContractsPolling();
-        this.contracts.set([]);
+        this.fetchContracts();
+        this.fetchContractAttachments();
       }
     });
 
     this.formGroup = this.fb.group({
-      worker_id: this.fb.control<number>({ value: 0, disabled: true }),
-      status_id: this.fb.control<string>({ value: '', disabled: true }, {
-        validators: [Validators.required],
-      }),
+      id: this.fb.control<number>({ value: 0, disabled: true }),
     });
   }
     
@@ -214,93 +313,59 @@ export class Contracts implements OnDestroy {
 
     this.error.set(null);
     
-    let params = new HttpParams();
-    if (this.maxRanking != null) {
-      params = params.set('max_ranking', this.maxRanking.toString());
-    }
-
-    const workers$ = this.http.get<SimpleColleaguesResponse>(
-      `${env.apiBase}/workers/simple`,
-      { params }
+    const users$ = this.http.get<SimpleUsersResponse>(
+      `${env.apiBase}/users/simple`
     );
 
-    const statuses$ = this.http.get<StatusesResponse>(
-      `${env.apiBase}/types/contract-statuses`
+    const types$ = this.http.get<ContractTypesResponse>(
+      `${env.apiBase}/types/contract-types`
+    );
+
+    const financialInstitutions$ = this.http.get<FinancialInstitutionsResponse>(
+      `${env.apiBase}/financial_institutions`
     );
 
     try {
-      const [workersRes, statusesRes] = await Promise.all([
-        firstValueFrom(workers$),
-        firstValueFrom(statuses$),
+      const [usersRes, typesRes, financialInstitutionsRes] = await Promise.all([
+        firstValueFrom(users$),
+        firstValueFrom(types$),
+        firstValueFrom(financialInstitutions$),
       ]);
 
-      this.colleagues.set(workersRes?.data ?? []);
-      this.statuses.set(statusesRes?.data ?? []);
+      this.users.set(usersRes?.data ?? []);
+      this.types.set(typesRes?.data ?? []);
+      this.financialInstitutions.set(financialInstitutionsRes?.data ?? []);
 
     } catch (e) {
       console.error(e);
       this.error.set('init_load_failed');
-      this.colleagues.set([]);
-      this.statuses.set([]);
+      this.users.set([]);
+      this.types.set([]);
+      this.financialInstitutions.set([]);
     }
-  }
-
-  ngOnDestroy(): void {
-    this.stopContractsPolling();
   }
 
   async onSubmit() {
-
-    if (this.formGroup.invalid) {
-      this.forms.setFocus(this.formGroup, this.formElement);
-      return;
-    }
-    
-    const currentUser = this.auth.getUser();
-    if (!currentUser || !currentUser.id) {
-      this.error.set('user_not_authenticated');
-      this.modal.error('user_not_authenticated', { 
-        onOk: () => this.toggleIsEditMode() 
-      });
-      return;
-    }
 
     const startTime = new Date().getTime();
     this.modal.loading('data_authentication');
     this.error.set(null);
 
-    const msg_id  = this.contracts()[this.rowPointer()].id;
-    const raw     = this.formGroup.getRawValue();
-    const payload = { ...raw, 
-                      user_id: currentUser.id,
-                      worker_id_modified: currentUser.worker_id,
-                      id: msg_id
-                    };
-
-    try {
-      const res = await firstValueFrom(
-        this.http.post<ContractResponse>(`${env.apiBase}/contracts/change`, payload)
-      );
-      console.log(`Elapsed time: 
-        ${this.util.elapsedTimeInSec(startTime)} seconds.`);
-      this.modal.close();
-      
-      this.modal.info('data_saved_success', { 
-        onOk: () => this.toggleIsEditMode() 
-      });
-      
-      this.fetchContracts(false);
-      
-    } catch (e) {
-      console.error(e);
-      this.modal.close();
-      console.log(`Elapsed time: 
-        ${this.util.elapsedTimeInSec(startTime)} seconds.`);
-      this.error.set('data_saved_failed');
-      this.modal.error('data_saved_failed', { 
-        onOk: () => this.toggleIsEditMode() 
-      });
+    // User ellenőrzése
+    const currentUser = this.auth.getUser();
+    if (!currentUser || !currentUser.id) {
+      this.error.set('user_not_authenticated');
+      this.modal.error('user_not_authenticated');
+      return;
     }
+
+    this.modal.loading('data_authentication');
+    this.error.set(null);
+
+    setTimeout(() => {
+      this.modal.close();
+      this.modal.info('under_development');
+    }, 1000);
   }
 
   confirm() {
@@ -314,23 +379,23 @@ export class Contracts implements OnDestroy {
     this.forms.clearControl(this.formGroup, controlName, this.formElement, value);
   }
 
-  getColleagues = computed(() => {
+  getUsers = computed(() => {
 
     const _ = this.langSvc.nameOrderVersion();
 
-    const list = [...this.colleagues()];
+    const list = [...this.users()];
 
     return list.sort((a, b) => this.sortByName(a, b));
   });
 
-  getStatuses = computed(() => {
+  getTypes = computed(() => {
   
     const _ = this.langSvc.nameOrderVersion();
 
     const dict   = this.langSvc.state.data;
     const langId = this.langSvc.state.id;
 
-    const list = [...this.statuses()];
+    const list = [...this.types()];
 
     return list.sort((a, b) => {
       const aLabel = dict[a.name_id] ?? a.name_id;
@@ -340,45 +405,16 @@ export class Contracts implements OnDestroy {
     });
   });
 
-  private sortByName(a: Colleague, b: Colleague): number {
+  private sortByName(a: User, b: User): number {
     const langId = this.langSvc.state.id;
     return  this.getDisplayName(a)
                 .localeCompare(this.getDisplayName(b), langId);
   }
 
-  private startContractsPolling(): void {
-    
-    if (!this.mounted()) 
-      this.modal.loading('data_request');
-    
-    this.stopContractsPolling();
-    this.fetchContracts(false);
+  private fetchContracts(): void {
 
-    this.contractsTimerId = setInterval(() => {
-      this.fetchContracts(false);
-    }, this.REFRESH_INTERVAL);
-  }
-
-  private stopContractsPolling(): void {
-
-    if (this.contractsTimerId) {
-      clearInterval(this.contractsTimerId);
-      this.contractsTimerId = null;
-    }
-  }
-
-  private fetchContracts(onlyNew: boolean): void {
-
-    if (!this.isLoggedIn() || !this.isWorker()) {
-      this.stopContractsPolling();
-      this.contracts.set([]);
-      if (this.modal.isOpened()) this.modal.close();
-      return;
-    }
-    
-    this.http.get<{ data: ContractsDto[] }>(
-      `${env.apiBase}/contracts`,
-      { params: { new: String(onlyNew) } }
+    this.http.get<{ data: ContractDto[] }>(
+      `${env.apiBase}/contracts`
     ).subscribe({
       next: res => {
         if (!this.mounted()) {
@@ -386,9 +422,9 @@ export class Contracts implements OnDestroy {
           this.mounted.set(true);
         }
         this.contracts.set(res.data ?? []);
-        if (this.rowPointer() === -1 ||
-            this.rowPointer() >= this.contracts().length) {
-          this.rowPointer.set(this.contracts().length ? 0 : -1);
+        if (this.contractRowPointer() === -1 ||
+            this.contractRowPointer() >= this.contracts().length) {
+          this.contractRowPointer.set(this.contracts().length ? 0 : -1);
         } 
       },
       error: err => {
@@ -398,8 +434,36 @@ export class Contracts implements OnDestroy {
         }
         console.error('Contracts load failed', err);
         if (err.status === 401 || err.status === 403) {
-          this.stopContractsPolling();
           this.contracts.set([]);
+        }
+      }
+    });
+  }
+
+  private fetchContractAttachments(): void {
+
+    this.http.get<{ data: ContractAttachmentDto[] }>(
+      `${env.apiBase}/contract-attachments`
+    ).subscribe({
+      next: res => {
+        if (!this.mounted()) {
+          this.modal.close();
+          this.mounted.set(true);
+        }
+        this.attachments.set(res.data ?? []);
+        if (this.contractAttachmentRowPointer() === -1 ||
+            this.contractAttachmentRowPointer() >= this.attachments().length) {
+          this.contractAttachmentRowPointer.set(this.attachments().length ? 0 : -1);
+        } 
+      },
+      error: err => {
+        if (!this.mounted()) {
+          this.modal.close();
+          this.mounted.set(true);
+        }
+        console.error('Contract attachments load failed', err);
+        if (err.status === 401 || err.status === 403) {
+          this.attachments.set([]);
         }
       }
     });
@@ -417,33 +481,60 @@ export class Contracts implements OnDestroy {
     return this.langSvc.getName(name);
   }
 
-  getCell(row: ContractsDto | null, key: ColumnKey): string {
+  getContractCell(
+    row: ContractDto | null, 
+    key: ColumnContractKey): string {
 
     if (!row) return '';
 
     switch (key) {
       case 'name':
         return this.getDisplayName(row);
-
-      case 'status_name_id': {
-        const id = row.status_name_id;
+      case 'type_name_id': {
+        const id = row.type_name_id;
         return id ? (this.lang.data[id] || id) : '';
       }
+      case 'contract_no':     
+        return row.contract_no ?? '';
+      case 'f_i_name':
+        return row.f_i_name ?? '';
+      case 'f_i_img':
+        return row.f_i_img ?? '';
+      case 'award':
+        return row.award?.toString() ?? '0';
+      case 'currency':
+        return row.currency ?? '';
+      case 'start_at':
+        return row.start_at ?? '';
+      case 'description':
+        return row.description ?? '';
+      default:
+        return '';
+    }
+  }
 
-      case 'subject_name_id': {
-        const id = row.subject_name_id;
+  getContractAttachmentCell(
+    row: ContractAttachmentDto | null, 
+    key: ColumnContractAttachmentKey): string {
+
+    if (!row) return '';
+    switch (key) {
+      case 'type_name_id': {
+        const id = row.type_name_id;
         return id ? (this.lang.data[id] || id) : '';
       }
-
-      case 'message':
-        return row.message ?? '';
-
-      case 'created_at':
-        return row.created_at ?? '';
+      case 'file_name':     
+        return row.file_name ?? '';
+      case 'file_type':
+        return row.file_type ?? '';
+      case 'description':
+        return row.description ?? '';
+      default:
+        return '';
     }
   }
   
-  getAvatarSrc(row: ContractsDto): string {
+  getAvatarSrc(row: ContractDto): string {
     if (row.img) return row.img;
     const gender = row.gender ?? 'M';
     return gender === 'F'
@@ -451,16 +542,28 @@ export class Contracts implements OnDestroy {
       : 'assets/media/image/blank/male-blank.webp';
   }
 
-  setRowPointer(pointer: number) {
+  setContractRowPointer(pointer: number) {
 
-    this.rowPointer.set(pointer);
+    this.contractRowPointer.set(pointer);
 
     const row = this.contracts()[pointer];
     if (!row) return;
     if (this.isEditMode()) {
       this.formGroup.patchValue({
-        worker_id: row.worker_id ?? 0,
-        status_id: row.status_id ?? '',
+        id: row.id ?? 0,
+      });
+    }
+  }
+
+  setContractAttachmentRowPointer(pointer: number) {
+
+    this.contractAttachmentRowPointer.set(pointer);
+
+    const row = this.contracts()[pointer];
+    if (!row) return;
+    if (this.isEditMode()) {
+      this.formGroup.patchValue({
+        id: row.id ?? 0,
       });
     }
   }
@@ -486,40 +589,80 @@ export class Contracts implements OnDestroy {
     }
   }
 
-  changePosition(direction: string) {
+  changeContractPosition(direction: string) {
+
     if (this.isEditMode()) return;
-    const rowPointer = this.rowPointer();
+    const rowPointer = this.contractRowPointer();
     if (rowPointer < 0) return;
 
     const rowCount = this.contracts().length - 1;
     switch (direction) {
       case 'end':
         if (rowPointer < rowCount)
-          this.setRowPointer(rowCount);
+          this.setContractRowPointer(rowCount);
         break;
       case 'jump-forward':
         if (rowPointer < rowCount) {
           const step = Math.min(rowPointer + 10, rowCount);
-          this.setRowPointer(step);
+          this.setContractRowPointer(step);
         }
         break;
       case 'next':
         if (rowPointer < rowCount)
-          this.setRowPointer(rowPointer + 1);
+          this.setContractRowPointer(rowPointer + 1);
         break;
       case 'back':
         if (rowPointer > 0)
-          this.setRowPointer(rowPointer - 1);
+          this.setContractRowPointer(rowPointer - 1);
         break;
       case 'jump-backward':
         if (rowPointer > 0) {
           const step = Math.max(rowPointer - 10, 0);
-          this.setRowPointer(step);
+          this.setContractRowPointer(step);
         }
         break;
       case 'first':
         if (rowPointer > 0)
-          this.setRowPointer(0);
+          this.setContractRowPointer(0);
+        break;
+    }
+  }
+
+  changeContractAttachmentPosition(direction: string) {
+    
+    if (this.isEditMode()) return;
+    const rowPointer = this.contractAttachmentRowPointer();
+    if (rowPointer < 0) return;
+
+    const rowCount = this.attachments().length - 1;
+    switch (direction) {
+      case 'end':
+        if (rowPointer < rowCount)
+          this.setContractAttachmentRowPointer(rowCount);
+        break;
+      case 'jump-forward':
+        if (rowPointer < rowCount) {
+          const step = Math.min(rowPointer + 10, rowCount);
+          this.setContractAttachmentRowPointer(step);
+        }
+        break;
+      case 'next':
+        if (rowPointer < rowCount)
+          this.setContractAttachmentRowPointer(rowPointer + 1);
+        break;
+      case 'back':
+        if (rowPointer > 0)
+          this.setContractAttachmentRowPointer(rowPointer - 1);
+        break;
+      case 'jump-backward':
+        if (rowPointer > 0) {
+          const step = Math.max(rowPointer - 10, 0);
+          this.setContractAttachmentRowPointer(step);
+        }
+        break;
+      case 'first':
+        if (rowPointer > 0)
+          this.setContractAttachmentRowPointer(0);
         break;
     }
   }
@@ -527,21 +670,7 @@ export class Contracts implements OnDestroy {
   changeData(event: string) {
     switch (event) {
       case 'modify':
-        if (!this.isEditMode()) {
-          this.toggleIsEditMode(false);
-
-          const row = this.contracts()[this.rowPointer()];
-          if (row) {
-            this.formGroup.patchValue({
-              worker_id: row.worker_id ?? 0,
-              status_id: row.status_id ?? '',
-            });
-          }
-        }
-        if (!this.isPageMode()) {
-          this.isChangedView = true;
-          this.toggleOfView();
-        }
+        this.modal.info('under_development');
         break;
       case 'new':
         this.modal.info('under_development');
@@ -585,7 +714,7 @@ export class Contracts implements OnDestroy {
     switch(type) {
       case 'header':
         return [
-          //{id: 'view', icon: this.icon.faEye },
+          {id: 'view', icon: this.icon.faEye },
           {id: 'exit', icon: this.icon.faCircleXmark, deanger: true }
         ];
       case 'pos':
@@ -608,22 +737,48 @@ export class Contracts implements OnDestroy {
     }
   }
 
-  isCmdEnabled(event: string): boolean {
+  isContractCmdEnabled(event: string): boolean {
     switch(event) {
       case 'end':
       case 'jump-forward':
       case 'next':
-        return  this.rowPointer() === 
+        return  this.contractRowPointer() === 
                 this.contracts().length - 1 ||
                 this.isEditMode()
       case 'back':
       case 'jump-backward':
       case 'first':
-        return  this.rowPointer() <= 0 || 
+        return  this.contractRowPointer() <= 0 || 
                 this.isEditMode();
       case 'modify':
       case 'delete':
-        return  this.rowPointer() < 0 || 
+        return  this.contractRowPointer() < 0 || 
+                this.isEditMode();
+      case 'new':
+      case 'view':
+      case 'exit':
+        return this.isEditMode();
+      default:
+        return false;
+    }
+  }
+
+  isContractAttachmentCmdEnabled(event: string): boolean {
+    switch(event) {
+      case 'end':
+      case 'jump-forward':
+      case 'next':
+        return  this.contractAttachmentRowPointer() === 
+                this.attachments().length - 1 ||
+                this.isEditMode()
+      case 'back':
+      case 'jump-backward':
+      case 'first':
+        return  this.contractAttachmentRowPointer() <= 0 || 
+                this.isEditMode();
+      case 'modify':
+      case 'delete':
+        return  this.contractAttachmentRowPointer() < 0 || 
                 this.isEditMode();
       case 'new':
       case 'view':
@@ -641,65 +796,23 @@ export class Contracts implements OnDestroy {
     if (event.altKey) eventCode = 'Alt' + eventCode;
     switch (eventCode) {
       case 'AltPageDown':
-        this.changePosition('end');
+        this.changeContractPosition('end');
         break;
       case 'PageDown':
-        this.changePosition('jump-forward');
+        this.changeContractPosition('jump-forward');
         break;
       case 'ArrowDown':
-        this.changePosition('next');
+        this.changeContractPosition('next');
         break;
       case 'ArrowUp':
-        this.changePosition('back');
+        this.changeContractPosition('back');
         break;
       case 'PageUp':
-        this.changePosition('jump-backward');
+        this.changeContractPosition('jump-backward');
         break;
       case 'AltPageUp':
-        this.changePosition('first');
+        this.changeContractPosition('first');
         break;
     }
   }
 }
-
-
-
-
-
-
-
-
-
-// import { Component, AfterViewInit, signal } from '@angular/core';
-// import { CommonModule } from '@angular/common';              
-// import { LangService } from '../../core/lang.service';
-// import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-// import { faHandshake } from '@fortawesome/free-solid-svg-icons';
-
-// @Component({
-//   selector: 'app-contracts',
-//   standalone: true,                                          
-//   imports: [
-//     CommonModule,                                            
-//     FontAwesomeModule
-//   ],
-//   host: { class: 'block w-full' },
-//   templateUrl: './contracts.html',
-//   styleUrl: './contracts.css'
-// })
-// export class Contracts implements AfterViewInit {
-
-//   icon = { faHandshake };
-
-//   mounted = signal(false);
-
-//   constructor(public langSvc: LangService) {}
-    
-//   get lang() { return this.langSvc.state; }
-
-//   ngAfterViewInit() {
-//     queueMicrotask(() => {
-//       setTimeout(() => this.mounted.set(true), 100);
-//     });
-//   }
-// }
