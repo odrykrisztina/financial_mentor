@@ -137,7 +137,7 @@ export const routes: Routes = [
   { 
     path: 'contracts',
     canActivate: [authGuard],
-    data: { types: ['W','U'] },  
+    data: { types: ['W','U','A'] },  
     loadComponent: () => 
       import('./pages/contracts/contracts').then(m => m.Contracts) 
   },

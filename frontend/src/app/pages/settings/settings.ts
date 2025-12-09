@@ -137,7 +137,9 @@ export class Settings implements AfterViewInit {
               { title: "users", isRouteOutlet: true },
               { title: "workers", isRouteOutlet: true },
               { title: "messages", isRouteOutlet: true },
-              { title: "contracts", isRouteOutlet: true },
+              { title: "contracts", 
+                routeNavigate: '/contracts', 
+              },
               { title: "tasks", isRouteOutlet: true },
             ]
           },

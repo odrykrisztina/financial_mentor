@@ -103,6 +103,7 @@ type ContractDto = {
 
 type ContractAttachmentDto = {
   id              : number  | null;
+  contract_id     : number  | null;
   type            : string  | null;
                                       // join types ON
                                       // contract_attachments.type = types.id AND                                       
@@ -288,15 +289,24 @@ export class Contracts implements OnInit {
     effect(() => {
 
       const user = this.auth.user();
-      const loggedIn = !!user;
+      const loggedIn = !!user && user.type !== 'G';
       const worker   = !!user && user.type === 'W';
 
       this.isWorker.set(worker);
 
-      if (loggedIn && worker) {
+      if (loggedIn || worker) {
         this.fetchContracts();
-        this.fetchContractAttachments();
       }
+    });
+
+    effect(() => {
+      const selected = this.contractSelectedRow();
+      if (!selected || !selected.id) {
+        this.attachments.set([]);
+        this.contractAttachmentRowPointer.set(-1);
+        return;
+      }
+      this.fetchContractAttachments(selected.id);
     });
 
     this.formGroup = this.fb.group({
@@ -313,29 +323,29 @@ export class Contracts implements OnInit {
 
     this.error.set(null);
     
-    const users$ = this.http.get<SimpleUsersResponse>(
-      `${env.apiBase}/users/simple`
-    );
+    // const users$ = this.http.get<SimpleUsersResponse>(
+    //   `${env.apiBase}/users/simple`
+    // );
 
     const types$ = this.http.get<ContractTypesResponse>(
       `${env.apiBase}/types/contract-types`
     );
 
-    const financialInstitutions$ = this.http.get<FinancialInstitutionsResponse>(
-      `${env.apiBase}/financial_institutions`
-    );
+    // const financialInstitutions$ = this.http.get<FinancialInstitutionsResponse>(
+    //   `${env.apiBase}/financial_institutions`
+    // );
 
     try {
-      const [usersRes, typesRes, financialInstitutionsRes] = await Promise.all([
-        firstValueFrom(users$),
+      const [/*usersRes, */ typesRes /*, financialInstitutionsRes*/] = await Promise.all([
+        //firstValueFrom(users$),
         firstValueFrom(types$),
-        firstValueFrom(financialInstitutions$),
+        //firstValueFrom(financialInstitutions$),
       ]);
 
-      this.users.set(usersRes?.data ?? []);
+      //this.users.set(usersRes?.data ?? []);
       this.types.set(typesRes?.data ?? []);
       console.log(this.types());
-      this.financialInstitutions.set(financialInstitutionsRes?.data ?? []);
+      //this.financialInstitutions.set(financialInstitutionsRes?.data ?? []);
 
     } catch (e) {
       console.error(e);
@@ -441,10 +451,10 @@ export class Contracts implements OnInit {
     });
   }
 
-  private fetchContractAttachments(): void {
+  private fetchContractAttachments(contractId: number): void {
 
     this.http.get<{ data: ContractAttachmentDto[] }>(
-      `${env.apiBase}/contract-attachments`
+      `${env.apiBase}/contracts/${contractId}/attachments`
     ).subscribe({
       next: res => {
         if (!this.mounted()) {
@@ -465,6 +475,7 @@ export class Contracts implements OnInit {
         console.error('Contract attachments load failed', err);
         if (err.status === 401 || err.status === 403) {
           this.attachments.set([]);
+          this.contractAttachmentRowPointer.set(-1);
         }
       }
     });
@@ -559,8 +570,7 @@ export class Contracts implements OnInit {
   setContractAttachmentRowPointer(pointer: number) {
 
     this.contractAttachmentRowPointer.set(pointer);
-
-    const row = this.contracts()[pointer];
+    const row = this.attachments()[pointer];
     if (!row) return;
     if (this.isEditMode()) {
       this.formGroup.patchValue({

@@ -166,7 +166,7 @@ export class SidebarComponent implements OnInit {
     }
     // Route
     else if (item.routeNavigate) {
-      this.router.navigate(item.routeNavigate);
+      this.router.navigate([item.routeNavigate]);
     }
 
     // Check to set selected item
