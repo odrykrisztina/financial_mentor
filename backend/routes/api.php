@@ -6,6 +6,8 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WorkerController;
 use App\Http\Controllers\CourseController;
+use App\Http\Controllers\ContractController;
+use App\Http\Controllers\ContractAttachmentController;
 use App\Http\Controllers\TypeController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\TaskSubmissionController;
@@ -46,6 +48,10 @@ Route::prefix('v1')->group(function () {
     Route::get('/messages', [MessageController::class, 'index']);
     Route::post('messages/change', [MessageController::class, 'changeMessage']);
     
+    // Contracts
+    Route::get('/contracts', [ContractController::class, 'index']);
+    Route::get('/contracts/{contract}/attachments', [ContractAttachmentController::class, 'index']);
+
     // Elérhető + Zárolt kurzusok
     Route::get('/courses', [CourseController::class, 'index']);
 
