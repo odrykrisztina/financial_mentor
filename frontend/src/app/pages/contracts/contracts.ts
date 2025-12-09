@@ -286,15 +286,18 @@ export class Contracts implements OnInit {
     private nav: NavigationService,
     private util: UtilityService,
   ) {
+
+    this.modal.loading('loading_data');
+
     effect(() => {
 
-      const user = this.auth.user();
-      const loggedIn = !!user && user.type !== 'G';
-      const worker   = !!user && user.type === 'W';
+      const user      = this.auth.user();
+      const isUser    = !!user && user.type !== 'G';
+      const isWorker  = !!user && user.type === 'W';
 
-      this.isWorker.set(worker);
+      this.isWorker.set(isWorker);
 
-      if (loggedIn || worker) {
+      if (isUser || isWorker) {
         this.fetchContracts();
       }
     });
@@ -321,39 +324,39 @@ export class Contracts implements OnInit {
 
   async ngOnInit() {
 
-    this.error.set(null);
+    // this.error.set(null);
     
     // const users$ = this.http.get<SimpleUsersResponse>(
     //   `${env.apiBase}/users/simple`
     // );
 
-    const types$ = this.http.get<ContractTypesResponse>(
-      `${env.apiBase}/types/contract-types`
-    );
+    // const types$ = this.http.get<ContractTypesResponse>(
+    //   `${env.apiBase}/types/contract-types`
+    // );
 
     // const financialInstitutions$ = this.http.get<FinancialInstitutionsResponse>(
     //   `${env.apiBase}/financial_institutions`
     // );
 
-    try {
-      const [/*usersRes, */ typesRes /*, financialInstitutionsRes*/] = await Promise.all([
-        //firstValueFrom(users$),
-        firstValueFrom(types$),
-        //firstValueFrom(financialInstitutions$),
-      ]);
+    // try {
+    //   const [usersRes, typesRes, financialInstitutionsRes] = await Promise.all([
+    //     firstValueFrom(users$),
+    //     firstValueFrom(types$),
+    //     firstValueFrom(financialInstitutions$),
+    //   ]);
 
-      //this.users.set(usersRes?.data ?? []);
-      this.types.set(typesRes?.data ?? []);
-      console.log(this.types());
-      //this.financialInstitutions.set(financialInstitutionsRes?.data ?? []);
+    //   this.users.set(usersRes?.data ?? []);
+    //   this.types.set(typesRes?.data ?? []);
+    //   console.log(this.types());
+    //   this.financialInstitutions.set(financialInstitutionsRes?.data ?? []);
 
-    } catch (e) {
-      console.error(e);
-      this.error.set('init_load_failed');
-      this.users.set([]);
-      this.types.set([]);
-      this.financialInstitutions.set([]);
-    }
+    // } catch (e) {
+    //   console.error(e);
+    //   this.error.set('init_load_failed');
+    //   this.users.set([]);
+    //   this.types.set([]);
+    //   this.financialInstitutions.set([]);
+    // }
   }
 
   async onSubmit() {

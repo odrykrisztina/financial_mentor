@@ -127,7 +127,6 @@ export class Contact implements AfterViewInit {
 
   mounted = signal(false);
   error = signal<string | null>(null);
-  subjectOpen = false;
 
   constructor(
     private fb: NonNullableFormBuilder,
