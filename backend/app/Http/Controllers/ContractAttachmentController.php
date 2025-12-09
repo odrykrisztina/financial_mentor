@@ -15,9 +15,8 @@ class ContractAttachmentController extends Controller
         $user = $request->user();
         $role = $user->type ?? 'U';
 
-        // jogosultság ellenőrzés: ugyanaz a logika, mint a szerződéseknél
-        if ($role === 'A') {
-            // admin: ok
+        if ($role === 'A') {    
+            // ALL ALLOWED
         } elseif ($role === 'U') {
             if ($contract->user_id !== $user->id) {
                 abort(403, 'Forbidden');
@@ -28,7 +27,7 @@ class ContractAttachmentController extends Controller
                 abort(403, 'Forbidden');
             }
 
-            $workerIds = app(ContractController::class)->getWorkerTreeIds($worker->id);
+            $workerIds = Worker::getTreeIds($worker->id);
             if (!in_array($contract->worker_id, $workerIds, true)) {
                 abort(403, 'Forbidden');
             }
@@ -50,7 +49,7 @@ class ContractAttachmentController extends Controller
                 'contract_attachments.file_name',
                 'contract_attachments.file_path',
                 'contract_attachments.file_url',
-                'contract_attachments.file',
+                //'contract_attachments.file',
                 'contract_attachments.file_type',
                 'contract_attachments.description',
                 'contract_attachments.created_at',

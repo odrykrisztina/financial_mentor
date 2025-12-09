@@ -25,6 +25,29 @@ class Worker extends Model
     public function rankType(): BelongsTo
     {
         return $this->belongsTo(Type::class, 'rank', 'id')
-            ->where('types.type', 'RANK'); // expliciten a táblanévvel
+            ->where('types.type', 'RANK');
+    }
+
+    public static function getTreeIds(int $rootId): array
+    {
+        $ids = [$rootId];
+        $queue = [$rootId];
+
+        while (!empty($queue)) {
+            $current = array_shift($queue);
+
+            $children = self::where('superior', $current)
+                ->pluck('id')
+                ->all();
+
+            foreach ($children as $childId) {
+                if (!in_array($childId, $ids, true)) {
+                    $ids[]   = $childId;
+                    $queue[] = $childId;
+                }
+            }
+        }
+
+        return $ids;
     }
 }

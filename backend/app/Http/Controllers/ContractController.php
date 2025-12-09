@@ -17,38 +17,32 @@ class ContractController extends Controller
         $query = Contract::query();
 
         if ($role === 'A') {
-            // Admin: minden szerződés
+            // ALL ALLOWED
         } elseif ($role === 'U') {
-            // Ügyfél: csak a saját
+            // User only own
             $query->where('contracts.user_id', $user->id);
         } elseif ($role === 'W') {
-            // Dolgozó: saját + alatta lévők (rekurzív)
+            // Own and subordinate (recursive)
             $worker = Worker::where('user_id', $user->id)->first();
 
             if ($worker) {
-                $workerIds = $this->getWorkerTreeIds($worker->id); // saját + alatta lévők
+                $workerIds = Worker::getTreeIds($worker->id);
                 $query->whereIn('contracts.worker_id', $workerIds);
             } else {
-                // ha nincs worker rekord, ne adjon semmit
                 $query->whereRaw('1 = 0');
             }
         } else {
-            // Biztonság kedvéért: ne adjon semmit
             $query->whereRaw('1 = 0');
         }
 
         $rows = $query
-            // típusok (CONTRACT)
             ->leftJoin('types as t', function ($join) {
                 $join->on('contracts.type', '=', 't.id')
                      ->where('t.type', '=', 'CONTRACT');
             })
-            // ügyfél
             ->leftJoin('users as u', 'contracts.user_id', '=', 'u.id')
-            // dolgozó + dolgozó user
             ->leftJoin('workers', 'contracts.worker_id', '=', 'workers.id')
             ->leftJoin('users as u2', 'workers.user_id', '=', 'u2.id')
-            // pénzintézet
             ->leftJoin('financial_institutions as fi', 'contracts.financial_institution_id', '=', 'fi.id')
             ->select([
                 'contracts.id',
@@ -69,7 +63,7 @@ class ContractController extends Controller
                 'u.last_name',
                 'u.postfix_name',
                 'u.gender',
-                'u.img',
+                //'u.img',
 
                 'contracts.worker_id',
                 'u2.prefix_name as w_prefix_name',
@@ -78,11 +72,11 @@ class ContractController extends Controller
                 'u2.last_name as w_last_name',
                 'u2.postfix_name as w_postfix_name',
                 'u2.gender as w_gender',
-                'u2.img as w_img',
+                //'u2.img as w_img',
 
                 'fi.id as f_i_id',
                 'fi.name as f_i_name',
-                'fi.img as f_i_img',
+                //'fi.img as f_i_img',
             ])
             ->orderBy('contracts.start_at', 'desc')
             ->get();
@@ -92,32 +86,5 @@ class ContractController extends Controller
             'messageKey' => 'success',
             'data'       => $rows,
         ]);
-    }
-
-    /**
-     * Visszaadja az adott worker id-ját + az összes alatta lévő worker id-ját (rekurzívan).
-     */
-    private function getWorkerTreeIds(int $rootId): array
-    {
-        $ids = [$rootId];
-
-        $queue = [$rootId];
-
-        while (!empty($queue)) {
-            $current = array_shift($queue);
-
-            $children = Worker::where('superior', $current)
-                ->pluck('id')
-                ->all();
-
-            foreach ($children as $childId) {
-                if (!in_array($childId, $ids, true)) {
-                    $ids[]   = $childId;
-                    $queue[] = $childId;
-                }
-            }
-        }
-
-        return $ids;
     }
 }
