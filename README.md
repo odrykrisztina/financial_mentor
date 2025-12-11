@@ -1,5 +1,7 @@
 # Financial mentor
 
+# Every User, Worker password: 1234Aa 
+
 ### Require environment:
 - Node          v22.20.0 +
 - npm           11.2.0 +
